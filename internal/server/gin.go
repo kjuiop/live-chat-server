@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"live-chat-server/api/controller"
 	"live-chat-server/config"
 	"log/slog"
 	"net/http"
@@ -22,6 +23,9 @@ func NewGinServer(serverCfg config.Server) Client {
 
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+
+	systemController := controller.NewSystemController()
+	router.GET("/ping", systemController.GetHealth)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", serverCfg.Port),
