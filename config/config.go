@@ -5,8 +5,9 @@ import (
 )
 
 type EnvConfig struct {
-	Server Server
-	Logger Logger
+	Server     Server
+	Logger     Logger
+	RoomPolicy RoomPolicy
 }
 
 type Server struct {
@@ -20,13 +21,15 @@ type Logger struct {
 	PrintStdOut bool   `envconfig:"LOG_STDOUT" default:"false"`
 }
 
-func LoadEnvConfig() (*EnvConfig, error) {
+type RoomPolicy struct {
+	Prefix string `envconfig:"LCS_ROOM_PREFIX" default:"N1,N2"`
+}
 
+func LoadEnvConfig() (*EnvConfig, error) {
 	var config EnvConfig
 	if err := envconfig.Process("fua", &config); err != nil {
 		return nil, err
 	}
-
 	return &config, nil
 }
 

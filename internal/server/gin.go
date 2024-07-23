@@ -17,15 +17,21 @@ type Gin struct {
 	cfg config.Server
 }
 
-func NewGinServer(serverCfg config.Server) Client {
+func NewGinServer(cfg *config.EnvConfig) Client {
 
+	serverCfg := cfg.Server
 	router := getGinEngine(serverCfg.Mode)
 
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
+	api := router.Group("/api")
+
 	systemController := controller.NewSystemController()
-	router.GET("/ping", systemController.GetHealth)
+	setupSystemGroup(api, systemController)
+
+	roomController := controller.NewRoomController(cfg.RoomPolicy)
+	setupRoomGroup(api, roomController)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", serverCfg.Port),
@@ -34,7 +40,7 @@ func NewGinServer(serverCfg config.Server) Client {
 
 	return &Gin{
 		srv: srv,
-		cfg: serverCfg,
+		cfg: cfg.Server,
 	}
 }
 
@@ -65,4 +71,12 @@ func getGinEngine(mode string) *gin.Engine {
 	default:
 		return gin.Default()
 	}
+}
+
+func setupSystemGroup(router *gin.RouterGroup, systemController *controller.SystemController) {
+	router.GET("/health-check", systemController.GetHealth)
+}
+
+func setupRoomGroup(router *gin.RouterGroup, roomController *controller.RoomController) {
+	router.POST("/room", roomController.CreateRoom)
 }

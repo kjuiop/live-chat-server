@@ -14,5 +14,5 @@ func NewSystemController() *SystemController {
 }
 
 func (s *SystemController) GetHealth(c *gin.Context) {
-	c.JSON(http.StatusOK, models.HealthRes{Message: "pong"})
+	c.JSON(http.StatusOK, models.HealthRes{Message: models.GetCustomMessage(models.NoError)})
 }
