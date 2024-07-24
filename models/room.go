@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"live-chat-server/utils"
 	"math/rand"
@@ -42,4 +43,12 @@ func getChatPrefix(prefix string) string {
 	array := strings.Split(prefix, ",")
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	return array[rand.Intn(len(array))]
+}
+
+type RoomUseCase interface {
+	CreateChatRoom(ctx context.Context, room *RoomInfo) error
+}
+
+type RoomRepository interface {
+	Create(ctx context.Context, room *RoomInfo) error
 }

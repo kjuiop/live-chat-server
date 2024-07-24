@@ -7,7 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"live-chat-server/api/controller"
 	"live-chat-server/config"
+	redis "live-chat-server/internal/redis"
 	"live-chat-server/repository"
+	"live-chat-server/usecase"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -18,7 +20,7 @@ type Gin struct {
 	cfg config.Server
 }
 
-func NewGinServer(cfg *config.EnvConfig, repository repository.Client) Client {
+func NewGinServer(cfg *config.EnvConfig, redis redis.Client) Client {
 
 	serverCfg := cfg.Server
 	router := getGinEngine(serverCfg.Mode)
@@ -31,7 +33,9 @@ func NewGinServer(cfg *config.EnvConfig, repository repository.Client) Client {
 	systemController := controller.NewSystemController()
 	setupSystemGroup(api, systemController)
 
-	roomController := controller.NewRoomController(cfg.RoomPolicy, repository)
+	rr := repository.NewRoomRepository(redis)
+	ur := usecase.NewRoomUseCase(rr)
+	roomController := controller.NewRoomController(cfg.RoomPolicy, ur)
 	setupRoomGroup(api, roomController)
 
 	srv := &http.Server{

@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"live-chat-server/config"
-	"live-chat-server/models"
 	"time"
 )
 
@@ -14,7 +14,7 @@ type redisClient struct {
 	client *redis.Client
 }
 
-func NewRedisClient(ctx context.Context, cfg config.Redis) (Client, error) {
+func NewRedisSingleClient(ctx context.Context, cfg config.Redis) (Client, error) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:         cfg.Addr,
@@ -33,18 +33,27 @@ func NewRedisClient(ctx context.Context, cfg config.Redis) (Client, error) {
 	}, nil
 }
 
-func (r redisClient) CreateChatRoom(ctx context.Context, room *models.RoomInfo) error {
+func (r redisClient) HMSet(ctx context.Context, key string, data map[string]interface{}) error {
 
-	if room.RoomId == "" {
-		return fmt.Errorf("required chat room id : %s", room.RoomId)
+	if key == "" {
+		return errors.New("empty redis key")
 	}
 
-	if err := r.client.HMSet(ctx, room.RoomId, room.ConvertRedisData()).Err(); err != nil {
+	if err := r.client.HMSet(ctx, key, data).Err(); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
-	if err := r.client.Expire(ctx, room.RoomId, time.Duration(2)*time.Hour).Err(); err != nil {
-		return fmt.Errorf("create chat room key fail set ttl, key : %s, err : %w", room.RoomId, err)
+	return nil
+}
+
+func (r redisClient) Expire(ctx context.Context, key string, expTime time.Duration) error {
+
+	if key == "" {
+		return errors.New("empty redis key")
+	}
+
+	if err := r.client.Expire(ctx, key, expTime).Err(); err != nil {
+		return fmt.Errorf("fail set ttl, key : %w", err)
 	}
 
 	return nil
