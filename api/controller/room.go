@@ -5,16 +5,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"live-chat-server/config"
 	"live-chat-server/models"
+	"live-chat-server/repository"
+	"log/slog"
 	"net/http"
 )
 
 type RoomController struct {
 	cfg config.RoomPolicy
+	db  repository.Client
 }
 
-func NewRoomController(cfg config.RoomPolicy) *RoomController {
+func NewRoomController(cfg config.RoomPolicy, db repository.Client) *RoomController {
 	return &RoomController{
 		cfg: cfg,
+		db:  db,
 	}
 }
 
@@ -29,6 +33,8 @@ func (r *RoomController) successResponse(c *gin.Context, statusCode int, data in
 func (r *RoomController) failResponse(c *gin.Context, statusCode, errorCode int, err error) {
 
 	message := models.GetCustomErrMessage(errorCode, err.Error())
+	slog.Error(message, "status_code", statusCode, "error_code", errorCode, "err", err)
+
 	c.JSON(statusCode, models.FailRes{
 		ErrorCode: errorCode,
 		Message:   message,
@@ -36,7 +42,6 @@ func (r *RoomController) failResponse(c *gin.Context, statusCode, errorCode int,
 }
 
 func (r *RoomController) CreateRoom(c *gin.Context) {
-
 	req := models.CreateRoomReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		r.failResponse(c, http.StatusBadRequest, models.ErrParsing, fmt.Errorf("CreateRoom json parsing err : %w", err))
@@ -44,5 +49,10 @@ func (r *RoomController) CreateRoom(c *gin.Context) {
 	}
 
 	roomInfo := models.NewRoomInfo(&req, r.cfg.Prefix)
+	if err := r.db.CreateChatRoom(c, roomInfo); err != nil {
+		r.failResponse(c, http.StatusInternalServerError, models.ErrRedisHMSETError, fmt.Errorf("CreateRoom HMSET err : %w", err))
+		return
+	}
+
 	r.successResponse(c, http.StatusCreated, roomInfo)
 }

@@ -1,12 +1,14 @@
 package config
 
 import (
+	"fmt"
 	"github.com/kelseyhightower/envconfig"
 )
 
 type EnvConfig struct {
 	Server     Server
 	Logger     Logger
+	Redis      Redis
 	RoomPolicy RoomPolicy
 }
 
@@ -19,6 +21,10 @@ type Logger struct {
 	Level       string `envconfig:"LCS_LOG_LEVEL" default:"debug"`
 	Path        string `envconfig:"LCS_LOG_PATH" default:"./logs/access.log"`
 	PrintStdOut bool   `envconfig:"LOG_STDOUT" default:"false"`
+}
+
+type Redis struct {
+	Addr string `envconfig:"LCS_REDIS_ADDR" default:":6379"`
 }
 
 type RoomPolicy struct {
@@ -34,5 +40,10 @@ func LoadEnvConfig() (*EnvConfig, error) {
 }
 
 func (c *EnvConfig) CheckValid() error {
+
+	if c.Redis.Addr == "" {
+		return fmt.Errorf("check redis addr")
+	}
+
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"live-chat-server/config"
 	"live-chat-server/internal/server"
 	"live-chat-server/logger"
+	"live-chat-server/repository"
 	"log"
 	"log/slog"
 	"os"
@@ -37,7 +38,13 @@ func main() {
 
 	slog.Debug("live chat server app start", "git_hash", GIT_HASH, "build_time", BUILD_TIME, "app_version", APP_VERSION)
 
-	srv := server.NewGinServer(cfg)
+	redisClient, err := repository.NewRedisClient(ctx, cfg.Redis)
+	if err != nil {
+		log.Fatalf("fail to connect redis client")
+	}
+
+	srv := server.NewGinServer(cfg, redisClient)
+
 	wg.Add(1)
 	go srv.Run(&wg)
 

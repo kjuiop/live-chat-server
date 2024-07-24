@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"live-chat-server/api/controller"
 	"live-chat-server/config"
+	"live-chat-server/repository"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -17,7 +18,7 @@ type Gin struct {
 	cfg config.Server
 }
 
-func NewGinServer(cfg *config.EnvConfig) Client {
+func NewGinServer(cfg *config.EnvConfig, repository repository.Client) Client {
 
 	serverCfg := cfg.Server
 	router := getGinEngine(serverCfg.Mode)
@@ -30,7 +31,7 @@ func NewGinServer(cfg *config.EnvConfig) Client {
 	systemController := controller.NewSystemController()
 	setupSystemGroup(api, systemController)
 
-	roomController := controller.NewRoomController(cfg.RoomPolicy)
+	roomController := controller.NewRoomController(cfg.RoomPolicy, repository)
 	setupRoomGroup(api, roomController)
 
 	srv := &http.Server{

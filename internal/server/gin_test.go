@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"live-chat-server/config"
+	"live-chat-server/repository"
 	"net/http"
 	"sync"
 	"testing"
@@ -20,7 +21,9 @@ func TestRunAndShutdown(t *testing.T) {
 		Port: "8090",
 	}
 
-	s := NewGinServer(cfg)
+	repo := repository.NewMemoryClient()
+
+	s := NewGinServer(cfg, repo)
 
 	wg.Add(1)
 	go s.Run(wg)
