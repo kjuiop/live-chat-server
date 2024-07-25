@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"live-chat-server/api/controller"
+	"live-chat-server/api/middleware"
 	"live-chat-server/config"
 	redis "live-chat-server/internal/redis"
 	"live-chat-server/repository"
@@ -25,18 +27,20 @@ func NewGinServer(cfg *config.EnvConfig, redis redis.Client) Client {
 	serverCfg := cfg.Server
 	router := getGinEngine(serverCfg.Mode)
 
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	router.Use(middleware.LoggingMiddleware)
+	router.Use(middleware.RecoveryErrorReport())
+	router.Use(cors.New(cors.Config{
+		AllowWebSockets:  true,
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"*"},
+		AllowCredentials: true,
+	}))
 
 	api := router.Group("/api")
 
-	systemController := controller.NewSystemController()
-	setupSystemGroup(api, systemController)
-
-	rr := repository.NewRoomRepository(redis)
-	ur := usecase.NewRoomUseCase(rr)
-	roomController := controller.NewRoomController(cfg.RoomPolicy, ur)
-	setupRoomGroup(api, roomController)
+	setupSystemGroup(api)
+	setupRoomGroup(api, cfg.RoomPolicy, redis)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", serverCfg.Port),
@@ -78,10 +82,16 @@ func getGinEngine(mode string) *gin.Engine {
 	}
 }
 
-func setupSystemGroup(router *gin.RouterGroup, systemController *controller.SystemController) {
+func setupSystemGroup(router *gin.RouterGroup) {
+	systemController := controller.NewSystemController()
 	router.GET("/health-check", systemController.GetHealth)
+	router.GET("/panic-test", systemController.OccurPanic)
 }
 
-func setupRoomGroup(router *gin.RouterGroup, roomController *controller.RoomController) {
+func setupRoomGroup(router *gin.RouterGroup, cfg config.RoomPolicy, redis redis.Client) {
+	rr := repository.NewRoomRepository(redis)
+	ur := usecase.NewRoomUseCase(rr)
+	roomController := controller.NewRoomController(cfg, ur)
+
 	router.POST("/room", roomController.CreateRoom)
 }

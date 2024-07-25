@@ -8,6 +8,7 @@ import (
 type EnvConfig struct {
 	Server     Server
 	Logger     Logger
+	Slack      Slack
 	Redis      Redis
 	RoomPolicy RoomPolicy
 }
@@ -21,6 +22,10 @@ type Logger struct {
 	Level       string `envconfig:"LCS_LOG_LEVEL" default:"debug"`
 	Path        string `envconfig:"LCS_LOG_PATH" default:"./logs/access.log"`
 	PrintStdOut bool   `envconfig:"LOG_STDOUT" default:"false"`
+}
+
+type Slack struct {
+	WebhookReportUrl string `envconfig:"LCS_SLACK_WEBHOOK_REPORT_URL" default:"https://hooks.slack.com/services/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"`
 }
 
 type Redis struct {
@@ -42,7 +47,11 @@ func LoadEnvConfig() (*EnvConfig, error) {
 func (c *EnvConfig) CheckValid() error {
 
 	if c.Redis.Addr == "" {
-		return fmt.Errorf("check redis addr")
+		return fmt.Errorf("check, redis addr is empty")
+	}
+
+	if c.Slack.WebhookReportUrl == "" {
+		return fmt.Errorf("check, slack webhook report url is empty")
 	}
 
 	return nil
