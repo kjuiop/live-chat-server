@@ -2,11 +2,9 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"live-chat-server/config"
-	"live-chat-server/models"
 	"time"
 )
 
@@ -36,10 +34,6 @@ func NewRedisSingleClient(ctx context.Context, cfg config.Redis) (Client, error)
 
 func (r *redisClient) HGetAll(ctx context.Context, key string) (map[string]string, error) {
 
-	if key == "" {
-		return nil, errors.New(models.EmptyRedisKey)
-	}
-
 	result, err := r.client.HGetAll(ctx, key).Result()
 	if err != nil {
 		return nil, fmt.Errorf("fail get data hgetall, err : %w", err)
@@ -50,10 +44,6 @@ func (r *redisClient) HGetAll(ctx context.Context, key string) (map[string]strin
 
 func (r *redisClient) HMSet(ctx context.Context, key string, data map[string]interface{}) error {
 
-	if key == "" {
-		return errors.New(models.EmptyRedisKey)
-	}
-
 	if err := r.client.HMSet(ctx, key, data).Err(); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
@@ -63,13 +53,17 @@ func (r *redisClient) HMSet(ctx context.Context, key string, data map[string]int
 
 func (r *redisClient) Expire(ctx context.Context, key string, expTime time.Duration) error {
 
-	if key == "" {
-		return errors.New(models.EmptyRedisKey)
-	}
-
 	if err := r.client.Expire(ctx, key, expTime).Err(); err != nil {
 		return fmt.Errorf("fail set ttl, key : %w", err)
 	}
 
 	return nil
+}
+
+func (r *redisClient) Exists(ctx context.Context, key string) (bool, error) {
+	isExist, err := r.client.Exists(ctx, key).Result()
+	if err != nil {
+		return false, err
+	}
+	return isExist == 1, nil
 }

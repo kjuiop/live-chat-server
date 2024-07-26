@@ -88,4 +88,5 @@ func setupRoomGroup(router *gin.RouterGroup, cfg config.RoomPolicy, redis redis.
 
 	router.POST("/room", roomController.CreateChatRoom)
 	router.GET("/room/:roomId", roomController.GetChatRoom)
+	router.PUT("/room/:roomId", roomController.UpdateChatRoom)
 }
