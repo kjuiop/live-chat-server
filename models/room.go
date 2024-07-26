@@ -60,6 +60,7 @@ type RoomUseCase interface {
 	GetChatRoomById(ctx context.Context, roomId string) (RoomInfo, error)
 	CheckExistRoomId(ctx context.Context, roomId string) (bool, error)
 	UpdateChatRoom(ctx context.Context, roomId string, room *RoomInfo) (RoomInfo, error)
+	DeleteChatRoom(ctx context.Context, roomId string) error
 }
 
 type RoomRepository interface {
@@ -67,4 +68,5 @@ type RoomRepository interface {
 	Fetch(ctx context.Context, key string) (RoomInfo, error)
 	Exists(ctx context.Context, key string) (bool, error)
 	Update(ctx context.Context, key string, data *RoomInfo) error
+	Delete(ctx context.Context, key string) error
 }

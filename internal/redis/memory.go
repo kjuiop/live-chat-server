@@ -26,3 +26,13 @@ func (m memoryClient) HGetAll(ctx context.Context, key string) (map[string]strin
 	//TODO implement me
 	panic("implement me")
 }
+
+func (m memoryClient) Exists(ctx context.Context, key string) (bool, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m memoryClient) DelByKey(ctx context.Context, key string) error {
+	//TODO implement me
+	panic("implement me")
+}

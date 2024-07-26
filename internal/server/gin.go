@@ -92,4 +92,5 @@ func setupRoomGroup(router *gin.RouterGroup, cfg config.Policy, timeout time.Dur
 	router.POST("/room", roomController.CreateChatRoom)
 	router.GET("/room/:roomId", roomController.GetChatRoom)
 	router.PUT("/room/:roomId", roomController.UpdateChatRoom)
+	router.DELETE("/room/:roomId", roomController.DeleteChatRoom)
 }

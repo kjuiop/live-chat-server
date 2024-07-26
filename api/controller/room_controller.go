@@ -99,3 +99,25 @@ func (r *RoomController) UpdateChatRoom(c *gin.Context) {
 
 	r.successResponse(c, http.StatusOK, savedInfo)
 }
+
+func (r *RoomController) DeleteChatRoom(c *gin.Context) {
+
+	roomId := c.Param("roomId")
+	isExist, err := r.RoomUseCase.CheckExistRoomId(c, roomId)
+	if err != nil {
+		r.failResponse(c, http.StatusInternalServerError, models.ErrRedisExistError, fmt.Errorf("fail exec redis exist cmd, err : %w", err))
+		return
+	}
+
+	if !isExist {
+		r.successResponse(c, http.StatusNoContent, nil)
+		return
+	}
+
+	if err := r.RoomUseCase.DeleteChatRoom(c, roomId); err != nil {
+		r.failResponse(c, http.StatusInternalServerError, models.ErrRedisHMDELError, fmt.Errorf("fail exec redis hmdel cmd, err : %w", err))
+		return
+	}
+
+	r.successResponse(c, http.StatusOK, nil)
+}

@@ -91,3 +91,16 @@ func (r *roomRepository) Update(ctx context.Context, key string, room *models.Ro
 
 	return nil
 }
+
+func (r *roomRepository) Delete(ctx context.Context, key string) error {
+
+	if key == "" {
+		return fmt.Errorf("fail delete chat room, required chat room id : %s", key)
+	}
+
+	if err := r.rdb.DelByKey(ctx, key); err != nil {
+		return err
+	}
+
+	return nil
+}

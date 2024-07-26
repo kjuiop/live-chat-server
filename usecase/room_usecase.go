@@ -64,3 +64,14 @@ func (r *roomUseCase) UpdateChatRoom(c context.Context, roomId string, room *mod
 
 	return savedInfo, nil
 }
+
+func (r *roomUseCase) DeleteChatRoom(c context.Context, roomId string) error {
+	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
+	defer cancel()
+
+	if err := r.roomRepository.Delete(ctx, roomId); err != nil {
+		return err
+	}
+
+	return nil
+}
