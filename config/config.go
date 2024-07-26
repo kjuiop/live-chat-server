@@ -6,11 +6,11 @@ import (
 )
 
 type EnvConfig struct {
-	Server     Server
-	Logger     Logger
-	Slack      Slack
-	Redis      Redis
-	RoomPolicy RoomPolicy
+	Server Server
+	Logger Logger
+	Slack  Slack
+	Redis  Redis
+	Policy Policy
 }
 
 type Server struct {
@@ -32,8 +32,9 @@ type Redis struct {
 	Addr string `envconfig:"LCS_REDIS_ADDR" default:":6379"`
 }
 
-type RoomPolicy struct {
-	Prefix string `envconfig:"LCS_ROOM_PREFIX" default:"N1,N2"`
+type Policy struct {
+	Prefix         string `envconfig:"LCS_ROOM_PREFIX" default:"N1,N2"`
+	ContextTimeout int    `envconfig:"LCS_CONTEXT_TIMEOUT" default:"3"`
 }
 
 func LoadEnvConfig() (*EnvConfig, error) {

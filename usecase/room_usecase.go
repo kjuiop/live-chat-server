@@ -8,23 +8,25 @@ import (
 
 type roomUseCase struct {
 	roomRepository models.RoomRepository
+	contextTimeout time.Duration
 }
 
-func NewRoomUseCase(roomRepository models.RoomRepository) models.RoomUseCase {
+func NewRoomUseCase(roomRepository models.RoomRepository, timeout time.Duration) models.RoomUseCase {
 	return &roomUseCase{
 		roomRepository: roomRepository,
+		contextTimeout: timeout,
 	}
 }
 
 func (r *roomUseCase) CreateChatRoom(c context.Context, room *models.RoomInfo) error {
-	ctx, cancel := context.WithTimeout(c, 3*time.Second)
+	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
 	return r.roomRepository.Create(ctx, room)
 }
 
 func (r *roomUseCase) GetChatRoomById(c context.Context, roomId string) (models.RoomInfo, error) {
-	ctx, cancel := context.WithTimeout(c, 3*time.Second)
+	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
 	roomInfo, err := r.roomRepository.Fetch(ctx, roomId)
@@ -36,7 +38,7 @@ func (r *roomUseCase) GetChatRoomById(c context.Context, roomId string) (models.
 }
 
 func (r *roomUseCase) CheckExistRoomId(c context.Context, roomId string) (bool, error) {
-	ctx, cancel := context.WithTimeout(c, 3*time.Second)
+	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
 	isExist, err := r.roomRepository.Exists(ctx, roomId)
@@ -48,7 +50,7 @@ func (r *roomUseCase) CheckExistRoomId(c context.Context, roomId string) (bool, 
 }
 
 func (r *roomUseCase) UpdateChatRoom(c context.Context, roomId string, room *models.RoomInfo) (models.RoomInfo, error) {
-	ctx, cancel := context.WithTimeout(c, 3*time.Second)
+	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
 	if err := r.roomRepository.Update(ctx, roomId, room); err != nil {

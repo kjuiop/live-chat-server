@@ -9,11 +9,11 @@ import (
 )
 
 type RoomController struct {
-	cfg         config.RoomPolicy
+	cfg         config.Policy
 	RoomUseCase models.RoomUseCase
 }
 
-func NewRoomController(cfg config.RoomPolicy, useCase models.RoomUseCase) *RoomController {
+func NewRoomController(cfg config.Policy, useCase models.RoomUseCase) *RoomController {
 	return &RoomController{
 		cfg:         cfg,
 		RoomUseCase: useCase,
