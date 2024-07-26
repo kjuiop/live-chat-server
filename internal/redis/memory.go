@@ -21,3 +21,8 @@ func (m memoryClient) Expire(ctx context.Context, key string, expTime time.Durat
 	//TODO implement me
 	panic("implement me")
 }
+
+func (m memoryClient) HGetAll(ctx context.Context, key string) (map[string]string, error) {
+	//TODO implement me
+	panic("implement me")
+}

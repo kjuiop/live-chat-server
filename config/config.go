@@ -25,7 +25,7 @@ type Logger struct {
 }
 
 type Slack struct {
-	WebhookReportUrl string `envconfig:"LCS_SLACK_WEBHOOK_REPORT_URL" default:"https://hooks.slack.com/services/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"`
+	WebhookReportUrl string `envconfig:"LCS_SLACK_WEBHOOK_REPORT_URL" default:""`
 }
 
 type Redis struct {

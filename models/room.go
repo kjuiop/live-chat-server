@@ -33,6 +33,7 @@ func NewRoomInfo(req *CreateRoomReq, prefix string) *RoomInfo {
 
 func (r *RoomInfo) ConvertRedisData() map[string]interface{} {
 	return map[string]interface{}{
+		"room_id":       r.RoomId,
 		"customer_id":   r.CustomerId,
 		"channel_key":   r.ChannelKey,
 		"broadcast_key": r.BroadcastKey,
@@ -47,8 +48,10 @@ func getChatPrefix(prefix string) string {
 
 type RoomUseCase interface {
 	CreateChatRoom(ctx context.Context, room *RoomInfo) error
+	GetChatRoomById(ctx context.Context, roomId string) (RoomInfo, error)
 }
 
 type RoomRepository interface {
-	Create(ctx context.Context, room *RoomInfo) error
+	Create(ctx context.Context, data *RoomInfo) error
+	Fetch(ctx context.Context, key string) (RoomInfo, error)
 }

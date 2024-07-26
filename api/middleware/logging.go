@@ -50,11 +50,13 @@ func LoggingMiddleware(c *gin.Context) {
 		"latency", param.Latency.String(),
 	)
 
-	if c.Writer.Status() >= 200 && c.Writer.Status() < 300 {
+	if IsSuccess(c.Writer.Status()) {
 		logger.Info("success")
 	} else {
 		logger.Error(param.ErrorMessage)
-		reportMsg := fmt.Sprintf("status_code : %d, err : %s", c.Writer.Status(), param.ErrorMessage)
-		reporter.Client.SendSlackPanicReport(reportMsg)
+		if IsInternalServerError(c.Writer.Status()) {
+			reportMsg := fmt.Sprintf("status_code : %d, err : %s", c.Writer.Status(), param.ErrorMessage)
+			reporter.Client.SendInternalErrorReport(reportMsg)
+		}
 	}
 }

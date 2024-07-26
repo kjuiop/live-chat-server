@@ -22,3 +22,15 @@ func (r *roomUseCase) CreateChatRoom(c context.Context, room *models.RoomInfo) e
 
 	return r.roomRepository.Create(ctx, room)
 }
+
+func (r *roomUseCase) GetChatRoomById(c context.Context, roomId string) (models.RoomInfo, error) {
+	ctx, cancel := context.WithTimeout(c, 3*time.Second)
+	defer cancel()
+
+	roomInfo, err := r.roomRepository.Fetch(ctx, roomId)
+	if err != nil {
+		return models.RoomInfo{}, err
+	}
+
+	return roomInfo, nil
+}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"live-chat-server/api/controller"
 	"live-chat-server/api/middleware"
@@ -29,13 +28,7 @@ func NewGinServer(cfg *config.EnvConfig, redis redis.Client) Client {
 
 	router.Use(middleware.LoggingMiddleware)
 	router.Use(middleware.RecoveryErrorReport())
-	router.Use(cors.New(cors.Config{
-		AllowWebSockets:  true,
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:     []string{"*"},
-		AllowCredentials: true,
-	}))
+	router.Use(middleware.SetCorsPolicy())
 
 	api := router.Group("/api")
 
@@ -93,5 +86,6 @@ func setupRoomGroup(router *gin.RouterGroup, cfg config.RoomPolicy, redis redis.
 	ur := usecase.NewRoomUseCase(rr)
 	roomController := controller.NewRoomController(cfg, ur)
 
-	router.POST("/room", roomController.CreateRoom)
+	router.POST("/room", roomController.CreateChatRoom)
+	router.GET("/room/:roomId", roomController.GetChatRoom)
 }

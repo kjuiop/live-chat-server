@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"live-chat-server/config"
+	"live-chat-server/models"
 	"time"
 )
 
@@ -33,10 +34,24 @@ func NewRedisSingleClient(ctx context.Context, cfg config.Redis) (Client, error)
 	}, nil
 }
 
-func (r redisClient) HMSet(ctx context.Context, key string, data map[string]interface{}) error {
+func (r *redisClient) HGetAll(ctx context.Context, key string) (map[string]string, error) {
 
 	if key == "" {
-		return errors.New("empty redis key")
+		return nil, errors.New(models.EmptyRedisKey)
+	}
+
+	result, err := r.client.HGetAll(ctx, key).Result()
+	if err != nil {
+		return nil, fmt.Errorf("fail get data hgetall, err : %w", err)
+	}
+
+	return result, nil
+}
+
+func (r *redisClient) HMSet(ctx context.Context, key string, data map[string]interface{}) error {
+
+	if key == "" {
+		return errors.New(models.EmptyRedisKey)
 	}
 
 	if err := r.client.HMSet(ctx, key, data).Err(); err != nil {
@@ -46,10 +61,10 @@ func (r redisClient) HMSet(ctx context.Context, key string, data map[string]inte
 	return nil
 }
 
-func (r redisClient) Expire(ctx context.Context, key string, expTime time.Duration) error {
+func (r *redisClient) Expire(ctx context.Context, key string, expTime time.Duration) error {
 
 	if key == "" {
-		return errors.New("empty redis key")
+		return errors.New(models.EmptyRedisKey)
 	}
 
 	if err := r.client.Expire(ctx, key, expTime).Err(); err != nil {

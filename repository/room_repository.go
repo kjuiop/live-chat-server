@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	redis "live-chat-server/internal/redis"
 	"live-chat-server/models"
@@ -18,7 +19,7 @@ func NewRoomRepository(client redis.Client) models.RoomRepository {
 	}
 }
 
-func (r roomRepository) Create(ctx context.Context, room *models.RoomInfo) error {
+func (r *roomRepository) Create(ctx context.Context, room *models.RoomInfo) error {
 
 	if room.RoomId == "" {
 		return fmt.Errorf("required chat room id : %s", room.RoomId)
@@ -34,4 +35,28 @@ func (r roomRepository) Create(ctx context.Context, room *models.RoomInfo) error
 
 	return nil
 
+}
+
+func (r *roomRepository) Fetch(ctx context.Context, key string) (models.RoomInfo, error) {
+
+	if key == "" {
+		return models.RoomInfo{}, fmt.Errorf("fail get room info, required chat room id : %s", key)
+	}
+
+	result, err := r.rdb.HGetAll(ctx, key)
+	if err != nil {
+		return models.RoomInfo{}, fmt.Errorf("fail get room info, err : %w", err)
+	}
+
+	jsonData, err := json.Marshal(result)
+	if err != nil {
+		return models.RoomInfo{}, fmt.Errorf("json marshal err : %w", err)
+	}
+
+	var roomInfo models.RoomInfo
+	if err := json.Unmarshal(jsonData, &roomInfo); err != nil {
+		return models.RoomInfo{}, fmt.Errorf("json parsing err : %w", err)
+	}
+
+	return roomInfo, nil
 }
