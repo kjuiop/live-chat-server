@@ -29,7 +29,7 @@ func (r *roomRepository) Create(ctx context.Context, room *models.RoomInfo) erro
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
-	if err := r.rdb.Expire(ctx, room.RoomId, time.Duration(2)*time.Hour); err != nil {
+	if err := r.rdb.Expire(ctx, room.RoomId, time.Duration(room.RoomIdTTLDay*24)*time.Hour); err != nil {
 		return fmt.Errorf("create chat room key fail set ttl, key : %s, err : %w", room.RoomId, err)
 	}
 
@@ -85,7 +85,7 @@ func (r *roomRepository) Update(ctx context.Context, key string, room *models.Ro
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
-	if err := r.rdb.Expire(ctx, room.RoomId, time.Duration(2)*time.Hour); err != nil {
+	if err := r.rdb.Expire(ctx, room.RoomId, time.Duration(room.RoomIdTTLDay*24)*time.Hour); err != nil {
 		return fmt.Errorf("create chat room key fail set ttl, key : %s, err : %w", room.RoomId, err)
 	}
 

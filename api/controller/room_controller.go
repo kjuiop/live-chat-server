@@ -55,7 +55,15 @@ func (r *RoomController) CreateChatRoom(c *gin.Context) {
 		return
 	}
 
-	r.successResponse(c, http.StatusCreated, roomInfo)
+	roomRes := models.RoomResponse{
+		RoomId:       roomInfo.RoomId,
+		CustomerId:   roomInfo.CustomerId,
+		ChannelKey:   roomInfo.ChannelKey,
+		BroadcastKey: roomInfo.BroadcastKey,
+		CreatedAt:    roomInfo.CreatedAt,
+	}
+
+	r.successResponse(c, http.StatusCreated, roomRes)
 }
 
 func (r *RoomController) GetChatRoom(c *gin.Context) {
@@ -67,7 +75,15 @@ func (r *RoomController) GetChatRoom(c *gin.Context) {
 		return
 	}
 
-	r.successResponse(c, http.StatusOK, roomInfo)
+	roomRes := models.RoomResponse{
+		RoomId:       roomInfo.RoomId,
+		CustomerId:   roomInfo.CustomerId,
+		ChannelKey:   roomInfo.ChannelKey,
+		BroadcastKey: roomInfo.BroadcastKey,
+		CreatedAt:    roomInfo.CreatedAt,
+	}
+
+	r.successResponse(c, http.StatusOK, roomRes)
 }
 
 func (r *RoomController) UpdateChatRoom(c *gin.Context) {
@@ -97,7 +113,15 @@ func (r *RoomController) UpdateChatRoom(c *gin.Context) {
 		return
 	}
 
-	r.successResponse(c, http.StatusOK, savedInfo)
+	roomRes := models.RoomResponse{
+		RoomId:       savedInfo.RoomId,
+		CustomerId:   savedInfo.CustomerId,
+		ChannelKey:   savedInfo.ChannelKey,
+		BroadcastKey: savedInfo.BroadcastKey,
+		CreatedAt:    savedInfo.CreatedAt,
+	}
+
+	r.successResponse(c, http.StatusOK, roomRes)
 }
 
 func (r *RoomController) DeleteChatRoom(c *gin.Context) {

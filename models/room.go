@@ -15,19 +15,31 @@ type RoomRequest struct {
 	BroadCastKey string `json:"broadcast_key"`
 }
 
-type RoomInfo struct {
+type RoomResponse struct {
 	RoomId       string `json:"room_id"`
 	CustomerId   string `json:"customer_id"`
 	ChannelKey   string `json:"channel_key"`
 	BroadcastKey string `json:"broadcast_key"`
+	CreatedAt    int64  `json:"created_at"`
+}
+
+type RoomInfo struct {
+	RoomId       string `json:"room_id"`
+	RoomIdTTLDay int    `json:"room_id_ttl_day"`
+	CustomerId   string `json:"customer_id"`
+	ChannelKey   string `json:"channel_key"`
+	BroadcastKey string `json:"broadcast_key"`
+	CreatedAt    int64  `json:"created_at"`
 }
 
 func NewRoomInfo(req *RoomRequest, prefix string) *RoomInfo {
 	return &RoomInfo{
 		RoomId:       fmt.Sprintf("%s_%s", getChatPrefix(prefix), utils.GenUUID()),
+		RoomIdTTLDay: 7,
 		CustomerId:   req.CustomerId,
 		ChannelKey:   req.ChannelKey,
 		BroadcastKey: req.BroadCastKey,
+		CreatedAt:    time.Now().Unix(),
 	}
 }
 
@@ -46,6 +58,7 @@ func (r *RoomInfo) ConvertRedisData() map[string]interface{} {
 		"customer_id":   r.CustomerId,
 		"channel_key":   r.ChannelKey,
 		"broadcast_key": r.BroadcastKey,
+		"CreatedAt":     r.CreatedAt,
 	}
 }
 
