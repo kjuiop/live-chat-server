@@ -6,10 +6,15 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"live-chat-server/api/controller"
+	"live-chat-server/api/middleware"
 	"live-chat-server/config"
+	redis "live-chat-server/internal/redis"
+	"live-chat-server/repository"
+	"live-chat-server/usecase"
 	"log/slog"
 	"net/http"
 	"sync"
+	"time"
 )
 
 type Gin struct {
@@ -17,15 +22,21 @@ type Gin struct {
 	cfg config.Server
 }
 
-func NewGinServer(serverCfg config.Server) Client {
+func NewGinServer(cfg *config.EnvConfig, redis redis.Client) Client {
 
+	serverCfg := cfg.Server
 	router := getGinEngine(serverCfg.Mode)
 
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	router.Use(middleware.LoggingMiddleware)
+	router.Use(middleware.RecoveryErrorReport())
+	router.Use(middleware.SetCorsPolicy())
 
-	systemController := controller.NewSystemController()
-	router.GET("/ping", systemController.GetHealth)
+	timeout := time.Duration(cfg.Policy.ContextTimeout) * time.Second
+
+	api := router.Group("/api")
+
+	setupSystemGroup(api)
+	setupRoomGroup(api, cfg.Policy, timeout, redis)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", serverCfg.Port),
@@ -34,7 +45,7 @@ func NewGinServer(serverCfg config.Server) Client {
 
 	return &Gin{
 		srv: srv,
-		cfg: serverCfg,
+		cfg: cfg.Server,
 	}
 }
 
@@ -65,4 +76,21 @@ func getGinEngine(mode string) *gin.Engine {
 	default:
 		return gin.Default()
 	}
+}
+
+func setupSystemGroup(router *gin.RouterGroup) {
+	systemController := controller.NewSystemController()
+	router.GET("/health-check", systemController.GetHealth)
+	router.GET("/panic-test", systemController.OccurPanic)
+}
+
+func setupRoomGroup(router *gin.RouterGroup, cfg config.Policy, timeout time.Duration, redis redis.Client) {
+	rr := repository.NewRoomRepository(redis)
+	ur := usecase.NewRoomUseCase(rr, timeout)
+	roomController := controller.NewRoomController(cfg, ur)
+
+	router.POST("/room", roomController.CreateChatRoom)
+	router.GET("/room/:roomId", roomController.GetChatRoom)
+	router.PUT("/room/:roomId", roomController.UpdateChatRoom)
+	router.DELETE("/room/:roomId", roomController.DeleteChatRoom)
 }

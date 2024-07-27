@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"live-chat-server/config"
+	redis "live-chat-server/internal/redis"
 	"net/http"
 	"sync"
 	"testing"
@@ -14,19 +15,22 @@ import (
 func TestRunAndShutdown(t *testing.T) {
 
 	wg := &sync.WaitGroup{}
-	serverCfg := config.Server{
+	cfg, _ := config.LoadEnvConfig()
+	cfg.Server = config.Server{
 		Mode: "test",
 		Port: "8090",
 	}
 
-	s := NewGinServer(serverCfg)
+	redisClient := redis.NewMemoryClient()
+
+	s := NewGinServer(cfg, redisClient)
 
 	wg.Add(1)
 	go s.Run(wg)
 
 	time.Sleep(10 * time.Millisecond)
 
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/ping", serverCfg.Port))
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/health-check", cfg.Server.Port))
 	if err != nil {
 		t.Fatalf("Failed to make GET request: %v", err)
 	}
