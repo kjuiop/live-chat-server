@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"live-chat-server/models"
 	"time"
 )
@@ -71,6 +72,17 @@ func (r *roomUseCase) DeleteChatRoom(c context.Context, roomId string) error {
 
 	if err := r.roomRepository.Delete(ctx, roomId); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (r *roomUseCase) RegisterRoomId(c context.Context, room *models.RoomInfo) error {
+	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
+	defer cancel()
+
+	if err := r.roomRepository.SetRoomMap(ctx, models.LiveChatServerRoomList, room); err != nil {
+		return fmt.Errorf("failed create room map, key:%s, err : %w", models.LiveChatServerRoomList, err)
 	}
 
 	return nil

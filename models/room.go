@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+const (
+	RedisPrefix            = "live-chat-server"
+	LiveChatServerRoom     = "live-chat-server-room"
+	LiveChatServerRoomList = "live-chat-server_room-list"
+	LiveChatRoomKeyTTL     = 7
+)
+
 type RoomRequest struct {
 	CustomerId   string `json:"customer_id"`
 	ChannelKey   string `json:"channel_key"`
@@ -34,8 +41,8 @@ type RoomInfo struct {
 
 func NewRoomInfo(req *RoomRequest, prefix string) *RoomInfo {
 	return &RoomInfo{
-		RoomId:       fmt.Sprintf("%s_%s", getChatPrefix(prefix), utils.GenUUID()),
-		RoomIdTTLDay: 7,
+		RoomId:       fmt.Sprintf("%s_%s-%s", LiveChatServerRoom, getChatPrefix(prefix), utils.GenUUID()),
+		RoomIdTTLDay: LiveChatRoomKeyTTL,
 		CustomerId:   req.CustomerId,
 		ChannelKey:   req.ChannelKey,
 		BroadcastKey: req.BroadCastKey,
@@ -62,6 +69,10 @@ func (r *RoomInfo) ConvertRedisData() map[string]interface{} {
 	}
 }
 
+func (r *RoomInfo) GenerateRoomMapKey() string {
+	return fmt.Sprintf("%s-%s-%s", LiveChatServerRoom, r.ChannelKey, r.BroadcastKey)
+}
+
 func getChatPrefix(prefix string) string {
 	array := strings.Split(prefix, ",")
 	rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -74,6 +85,7 @@ type RoomUseCase interface {
 	CheckExistRoomId(ctx context.Context, roomId string) (bool, error)
 	UpdateChatRoom(ctx context.Context, roomId string, room *RoomInfo) (RoomInfo, error)
 	DeleteChatRoom(ctx context.Context, roomId string) error
+	RegisterRoomId(ctx context.Context, room *RoomInfo) error
 }
 
 type RoomRepository interface {
@@ -82,4 +94,5 @@ type RoomRepository interface {
 	Exists(ctx context.Context, key string) (bool, error)
 	Update(ctx context.Context, key string, data *RoomInfo) error
 	Delete(ctx context.Context, key string) error
+	SetRoomMap(ctx context.Context, key string, data *RoomInfo) error
 }

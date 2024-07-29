@@ -55,6 +55,11 @@ func (r *RoomController) CreateChatRoom(c *gin.Context) {
 		return
 	}
 
+	if err := r.RoomUseCase.RegisterRoomId(c, roomInfo); err != nil {
+		r.failResponse(c, http.StatusInternalServerError, models.ErrRedisHMSETError, fmt.Errorf("register room id HMSET err : %w", err))
+		return
+	}
+
 	roomRes := models.RoomResponse{
 		RoomId:       roomInfo.RoomId,
 		CustomerId:   roomInfo.CustomerId,

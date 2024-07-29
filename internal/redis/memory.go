@@ -12,7 +12,7 @@ func NewMemoryClient() Client {
 	return &memoryClient{}
 }
 
-func (m memoryClient) HMSet(ctx context.Context, key string, data map[string]interface{}) error {
+func (m memoryClient) HSet(ctx context.Context, key string, data map[string]interface{}) error {
 	//TODO implement me
 	panic("implement me")
 }

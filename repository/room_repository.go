@@ -25,7 +25,7 @@ func (r *roomRepository) Create(ctx context.Context, room *models.RoomInfo) erro
 		return fmt.Errorf("required chat room id : %s", room.RoomId)
 	}
 
-	if err := r.rdb.HMSet(ctx, room.RoomId, room.ConvertRedisData()); err != nil {
+	if err := r.rdb.HSet(ctx, room.RoomId, room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
@@ -81,7 +81,7 @@ func (r *roomRepository) Update(ctx context.Context, key string, room *models.Ro
 		return fmt.Errorf("fail update chat room, required chat room id : %s", key)
 	}
 
-	if err := r.rdb.HMSet(ctx, room.RoomId, room.ConvertRedisData()); err != nil {
+	if err := r.rdb.HSet(ctx, room.RoomId, room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
@@ -99,6 +99,25 @@ func (r *roomRepository) Delete(ctx context.Context, key string) error {
 	}
 
 	if err := r.rdb.DelByKey(ctx, key); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data *models.RoomInfo) error {
+	if key == "" {
+		return fmt.Errorf("fail create chat room map, required key : %s", key)
+	}
+
+	jData, err := json.Marshal(data.ConvertRedisData())
+	if err != nil {
+		return fmt.Errorf("set room map json encoding fail, err : %w", err)
+	}
+
+	if err := r.rdb.HSet(ctx, key, map[string]interface{}{
+		data.GenerateRoomMapKey(): string(jData),
+	}); err != nil {
 		return err
 	}
 
