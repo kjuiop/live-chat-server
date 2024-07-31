@@ -12,7 +12,7 @@ import (
 const (
 	RedisPrefix            = "live-chat-server"
 	LiveChatServerRoom     = "live-chat-server-room"
-	LiveChatServerRoomList = "live-chat-server_room-list"
+	LiveChatServerRoomList = "live-chat-server-room-list"
 	LiveChatRoomKeyTTL     = 7
 )
 
@@ -22,12 +22,17 @@ type RoomRequest struct {
 	BroadCastKey string `json:"broadcast_key"`
 }
 
+type RoomIdRequest struct {
+	ChannelKey   string `form:"channel_key" binding:"required"`
+	BroadCastKey string `form:"broadcast_key" binding:"required"`
+}
+
 type RoomResponse struct {
 	RoomId       string `json:"room_id"`
-	CustomerId   string `json:"customer_id"`
-	ChannelKey   string `json:"channel_key"`
-	BroadcastKey string `json:"broadcast_key"`
-	CreatedAt    int64  `json:"created_at"`
+	CustomerId   string `json:"customer_id,omitempty"`
+	ChannelKey   string `json:"channel_key,omitempty"`
+	BroadcastKey string `json:"broadcast_key,omitempty"`
+	CreatedAt    int64  `json:"created_at,omitempty"`
 }
 
 type RoomInfo struct {
@@ -41,7 +46,7 @@ type RoomInfo struct {
 
 func NewRoomInfo(req *RoomRequest, prefix string) *RoomInfo {
 	return &RoomInfo{
-		RoomId:       fmt.Sprintf("%s_%s-%s", LiveChatServerRoom, getChatPrefix(prefix), utils.GenUUID()),
+		RoomId:       fmt.Sprintf("%s-%s", getChatPrefix(prefix), utils.GenUUID()),
 		RoomIdTTLDay: LiveChatRoomKeyTTL,
 		CustomerId:   req.CustomerId,
 		ChannelKey:   req.ChannelKey,
@@ -65,12 +70,16 @@ func (r *RoomInfo) ConvertRedisData() map[string]interface{} {
 		"customer_id":   r.CustomerId,
 		"channel_key":   r.ChannelKey,
 		"broadcast_key": r.BroadcastKey,
-		"CreatedAt":     r.CreatedAt,
+		"created_at":    r.CreatedAt,
 	}
 }
 
-func (r *RoomInfo) GenerateRoomMapKey() string {
-	return fmt.Sprintf("%s-%s-%s", LiveChatServerRoom, r.ChannelKey, r.BroadcastKey)
+func (r *RoomInfo) GenerateRoomKey() string {
+	return fmt.Sprintf("%s_%s", LiveChatServerRoom, r.RoomId)
+}
+
+func (r *RoomInfo) GenerateRoomMapFieldKey() string {
+	return fmt.Sprintf("%s_%s_%s", LiveChatServerRoomList, r.ChannelKey, r.BroadcastKey)
 }
 
 func getChatPrefix(prefix string) string {
@@ -86,6 +95,7 @@ type RoomUseCase interface {
 	UpdateChatRoom(ctx context.Context, roomId string, room *RoomInfo) (RoomInfo, error)
 	DeleteChatRoom(ctx context.Context, roomId string) error
 	RegisterRoomId(ctx context.Context, room *RoomInfo) error
+	GetChatRoomId(ctx context.Context, room RoomIdRequest) (RoomInfo, error)
 }
 
 type RoomRepository interface {
@@ -95,4 +105,5 @@ type RoomRepository interface {
 	Update(ctx context.Context, key string, data *RoomInfo) error
 	Delete(ctx context.Context, key string) error
 	SetRoomMap(ctx context.Context, key string, data *RoomInfo) error
+	GetRoomMap(ctx context.Context, key, mapKey string) (RoomInfo, error)
 }

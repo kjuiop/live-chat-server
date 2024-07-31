@@ -21,11 +21,7 @@ func NewRoomRepository(client redis.Client) models.RoomRepository {
 
 func (r *roomRepository) Create(ctx context.Context, room *models.RoomInfo) error {
 
-	if room.RoomId == "" {
-		return fmt.Errorf("required chat room id : %s", room.RoomId)
-	}
-
-	if err := r.rdb.HSet(ctx, room.RoomId, room.ConvertRedisData()); err != nil {
+	if err := r.rdb.HSet(ctx, room.GenerateRoomKey(), room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
@@ -38,10 +34,6 @@ func (r *roomRepository) Create(ctx context.Context, room *models.RoomInfo) erro
 }
 
 func (r *roomRepository) Fetch(ctx context.Context, key string) (models.RoomInfo, error) {
-
-	if key == "" {
-		return models.RoomInfo{}, fmt.Errorf("fail get room info, required chat room id : %s", key)
-	}
 
 	result, err := r.rdb.HGetAll(ctx, key)
 	if err != nil {
@@ -63,10 +55,6 @@ func (r *roomRepository) Fetch(ctx context.Context, key string) (models.RoomInfo
 
 func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
 
-	if key == "" {
-		return false, fmt.Errorf("fail check exist room id, required chat room id : %s", key)
-	}
-
 	isExist, err := r.rdb.Exists(ctx, key)
 	if err != nil {
 		return false, fmt.Errorf("fail redis cmd exist err : %w", err)
@@ -76,10 +64,6 @@ func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
 }
 
 func (r *roomRepository) Update(ctx context.Context, key string, room *models.RoomInfo) error {
-
-	if key == "" {
-		return fmt.Errorf("fail update chat room, required chat room id : %s", key)
-	}
 
 	if err := r.rdb.HSet(ctx, room.RoomId, room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
@@ -94,10 +78,6 @@ func (r *roomRepository) Update(ctx context.Context, key string, room *models.Ro
 
 func (r *roomRepository) Delete(ctx context.Context, key string) error {
 
-	if key == "" {
-		return fmt.Errorf("fail delete chat room, required chat room id : %s", key)
-	}
-
 	if err := r.rdb.DelByKey(ctx, key); err != nil {
 		return err
 	}
@@ -106,9 +86,6 @@ func (r *roomRepository) Delete(ctx context.Context, key string) error {
 }
 
 func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data *models.RoomInfo) error {
-	if key == "" {
-		return fmt.Errorf("fail create chat room map, required key : %s", key)
-	}
 
 	jData, err := json.Marshal(data.ConvertRedisData())
 	if err != nil {
@@ -116,10 +93,25 @@ func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data *model
 	}
 
 	if err := r.rdb.HSet(ctx, key, map[string]interface{}{
-		data.GenerateRoomMapKey(): string(jData),
+		data.GenerateRoomMapFieldKey(): string(jData),
 	}); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *roomRepository) GetRoomMap(ctx context.Context, key, mapKey string) (models.RoomInfo, error) {
+
+	result, err := r.rdb.HGet(ctx, key, mapKey)
+	if err != nil {
+		return models.RoomInfo{}, err
+	}
+
+	var roomInfo models.RoomInfo
+	if err := json.Unmarshal([]byte(result), &roomInfo); err != nil {
+		return models.RoomInfo{}, fmt.Errorf("json parsing err : %w", err)
+	}
+
+	return roomInfo, nil
 }

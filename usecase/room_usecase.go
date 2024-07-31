@@ -87,3 +87,17 @@ func (r *roomUseCase) RegisterRoomId(c context.Context, room *models.RoomInfo) e
 
 	return nil
 }
+
+func (r *roomUseCase) GetChatRoomId(c context.Context, room models.RoomIdRequest) (models.RoomInfo, error) {
+	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
+	defer cancel()
+
+	roomMapKey := fmt.Sprintf("%s_%s_%s", models.LiveChatServerRoomList, room.ChannelKey, room.BroadCastKey)
+
+	roomInfo, err := r.roomRepository.GetRoomMap(ctx, models.LiveChatServerRoomList, roomMapKey)
+	if err != nil {
+		return models.RoomInfo{}, err
+	}
+
+	return roomInfo, nil
+}

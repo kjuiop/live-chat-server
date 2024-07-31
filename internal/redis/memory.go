@@ -36,3 +36,8 @@ func (m memoryClient) DelByKey(ctx context.Context, key string) error {
 	//TODO implement me
 	panic("implement me")
 }
+
+func (m memoryClient) HGet(ctx context.Context, key, mapKey string) (string, error) {
+	//TODO implement me
+	panic("implement me")
+}

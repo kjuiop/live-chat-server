@@ -32,6 +32,16 @@ func NewRedisSingleClient(ctx context.Context, cfg config.Redis) (Client, error)
 	}, nil
 }
 
+func (r *redisClient) HGet(ctx context.Context, key, mapKey string) (string, error) {
+
+	roomId, err := r.client.HGet(ctx, key, mapKey).Result()
+	if err != nil {
+		return "", fmt.Errorf("fail hget data, err : %w", err)
+	}
+
+	return roomId, nil
+}
+
 func (r *redisClient) HGetAll(ctx context.Context, key string) (map[string]string, error) {
 
 	result, err := r.client.HGetAll(ctx, key).Result()
