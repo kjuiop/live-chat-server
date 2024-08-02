@@ -25,7 +25,7 @@ type Logger struct {
 }
 
 type Slack struct {
-	WebhookReportUrl string `envconfig:"LCS_SLACK_WEBHOOK_REPORT_URL" default:""`
+	WebhookReportUrl string `envconfig:"LCS_SLACK_WEBHOOK_REPORT_URL" default:"https://hooks.slack.com/services/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"`
 }
 
 type Redis struct {
@@ -34,7 +34,7 @@ type Redis struct {
 
 type Policy struct {
 	Prefix         string `envconfig:"LCS_ROOM_PREFIX" default:"N1,N2"`
-	ContextTimeout int    `envconfig:"LCS_CONTEXT_TIMEOUT" default:"3"`
+	ContextTimeout int    `envconfig:"LCS_CONTEXT_TIMEOUT" default:"60"`
 }
 
 func LoadEnvConfig() (*EnvConfig, error) {

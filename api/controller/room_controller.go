@@ -55,6 +55,11 @@ func (r *RoomController) CreateChatRoom(c *gin.Context) {
 		return
 	}
 
+	if err := r.RoomUseCase.RegisterRoomId(c, roomInfo); err != nil {
+		r.failResponse(c, http.StatusInternalServerError, models.ErrRedisHMSETError, fmt.Errorf("register room id HMSET err : %w", err))
+		return
+	}
+
 	roomRes := models.RoomResponse{
 		RoomId:       roomInfo.RoomId,
 		CustomerId:   roomInfo.CustomerId,
@@ -64,6 +69,26 @@ func (r *RoomController) CreateChatRoom(c *gin.Context) {
 	}
 
 	r.successResponse(c, http.StatusCreated, roomRes)
+}
+
+func (r *RoomController) GetChatRoomId(c *gin.Context) {
+	req := models.RoomIdRequest{}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		r.failResponse(c, http.StatusBadRequest, models.ErrParsing, fmt.Errorf("GetChatRoomId bind fail, err : %w", err))
+		return
+	}
+
+	roomInfo, err := r.RoomUseCase.GetChatRoomId(c, req)
+	if err != nil {
+		r.failResponse(c, http.StatusNotFound, models.ErrNotFoundChatRoom, fmt.Errorf("GetChatRoomId fail get roomInfo, err : %w", err))
+		return
+	}
+
+	roomRes := models.RoomResponse{
+		RoomId: roomInfo.RoomId,
+	}
+
+	r.successResponse(c, http.StatusOK, roomRes)
 }
 
 func (r *RoomController) GetChatRoom(c *gin.Context) {

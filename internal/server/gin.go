@@ -89,8 +89,10 @@ func setupRoomGroup(router *gin.RouterGroup, cfg config.Policy, timeout time.Dur
 	ur := usecase.NewRoomUseCase(rr, timeout)
 	roomController := controller.NewRoomController(cfg, ur)
 
-	router.POST("/room", roomController.CreateChatRoom)
-	router.GET("/room/:roomId", roomController.GetChatRoom)
-	router.PUT("/room/:roomId", roomController.UpdateChatRoom)
-	router.DELETE("/room/:roomId", roomController.DeleteChatRoom)
+	router.POST("/rooms", roomController.CreateChatRoom)
+	router.GET("/rooms/:roomId", roomController.GetChatRoom)
+	router.PUT("/rooms/:roomId", roomController.UpdateChatRoom)
+	router.DELETE("/rooms/:roomId", roomController.DeleteChatRoom)
+
+	router.GET("/rooms/id", roomController.GetChatRoomId)
 }

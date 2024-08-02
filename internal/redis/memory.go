@@ -12,7 +12,7 @@ func NewMemoryClient() Client {
 	return &memoryClient{}
 }
 
-func (m memoryClient) HMSet(ctx context.Context, key string, data map[string]interface{}) error {
+func (m memoryClient) HSet(ctx context.Context, key string, data map[string]interface{}) error {
 	//TODO implement me
 	panic("implement me")
 }
@@ -33,6 +33,11 @@ func (m memoryClient) Exists(ctx context.Context, key string) (bool, error) {
 }
 
 func (m memoryClient) DelByKey(ctx context.Context, key string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m memoryClient) HGet(ctx context.Context, key, mapKey string) (string, error) {
 	//TODO implement me
 	panic("implement me")
 }
