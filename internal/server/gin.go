@@ -90,11 +90,11 @@ func setupChatRoomGroup(api *gin.RouterGroup, ws *gin.RouterGroup, cfg config.Po
 	roomController := controller.NewRoomController(cfg, ur)
 
 	api.POST("/rooms", roomController.CreateChatRoom)
-	api.GET("/rooms/:roomId", roomController.GetChatRoom)
-	api.PUT("/rooms/:roomId", roomController.UpdateChatRoom)
-	api.DELETE("/rooms/:roomId", roomController.DeleteChatRoom)
+	api.GET("/rooms/:room_id", roomController.GetChatRoom)
+	api.PUT("/rooms/:room_id", roomController.UpdateChatRoom)
+	api.DELETE("/rooms/:room_id", roomController.DeleteChatRoom)
 	api.GET("/rooms/id", roomController.GetChatRoomId)
 
 	chatController := controller.NewChatController(ur)
-	ws.GET("/chat/join/rooms/:roomId", chatController.JoinChatRoom)
+	ws.GET("/chat/join/rooms/:room_id/user/:user_id", chatController.JoinChatRoom)
 }

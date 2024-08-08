@@ -3,17 +3,34 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	"live-chat-server/chat"
+	"live-chat-server/chat/types"
 	"live-chat-server/models"
+	"log"
 	"net/http"
+	"sync"
 )
+
+var crMutex = &sync.RWMutex{}
+
+var upgrader = &websocket.Upgrader{
+	ReadBufferSize:  types.SocketBufferSize,
+	WriteBufferSize: types.MessageBufferSize,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 type ChatController struct {
 	RoomUseCase models.RoomUseCase
+	hub         map[string]*chat.Room
 }
 
 func NewChatController(roomUseCase models.RoomUseCase) *ChatController {
 	return &ChatController{
 		RoomUseCase: roomUseCase,
+		hub:         make(map[string]*chat.Room),
 	}
 }
 
@@ -41,13 +58,32 @@ func (cc *ChatController) failResponse(c *gin.Context, statusCode, errorCode int
 
 func (cc *ChatController) JoinChatRoom(c *gin.Context) {
 
-	roomId := c.Param("roomId")
+	roomId := c.Param("room_id")
+	userId := c.Param("user_id")
 
-	_, err := cc.getChatRoom(c, roomId)
+	chatRoom, err := cc.getChatRoom(c, roomId)
 	if err != nil {
 		cc.failResponse(c, http.StatusNotFound, models.ErrNotFoundChatRoom, fmt.Errorf("not found chat room, roomId : %s, err : %w", roomId, err))
 		return
 	}
+
+	socket, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		log.Fatalln(err.Error())
+		return
+	}
+
+	client := chat.NewClient(socket, chatRoom, userId)
+
+	chatRoom.Join <- client
+
+	defer func() {
+		chatRoom.Leave <- client
+	}()
+
+	go client.Write()
+
+	client.Read()
 
 	cc.successResponse(c, http.StatusOK, models.SuccessRes{
 		ErrorCode: 0,
@@ -56,13 +92,20 @@ func (cc *ChatController) JoinChatRoom(c *gin.Context) {
 	})
 }
 
-func (cc *ChatController) getChatRoom(c *gin.Context, roomId string) (*models.ChatRoom, error) {
+func (cc *ChatController) getChatRoom(c *gin.Context, roomId string) (*chat.Room, error) {
 
-	roomInfo, err := cc.RoomUseCase.GetChatRoomById(c, roomId)
-	if err != nil {
-		return nil, fmt.Errorf("not found chat room, key : %s, err : %w", roomId, err)
+	crMutex.Lock()
+	defer func() {
+		crMutex.Unlock()
+	}()
+
+	if _, ok := cc.hub[roomId]; !ok {
+		roomInfo, err := cc.RoomUseCase.GetChatRoomById(c, roomId)
+		if err != nil {
+			return nil, fmt.Errorf("not found chat room, key : %s, err : %w", roomId, err)
+		}
+		cc.hub[roomId] = chat.NewChatRoom(roomInfo)
 	}
 
-	chatRoom := models.NewChatRoom(roomInfo)
-	return chatRoom, nil
+	return cc.hub[roomId], nil
 }

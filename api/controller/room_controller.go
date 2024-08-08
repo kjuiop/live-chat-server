@@ -93,7 +93,7 @@ func (r *RoomController) GetChatRoomId(c *gin.Context) {
 
 func (r *RoomController) GetChatRoom(c *gin.Context) {
 
-	roomId := c.Param("roomId")
+	roomId := c.Param("room_id")
 	roomInfo, err := r.RoomUseCase.GetChatRoomById(c, roomId)
 	if err != nil {
 		r.failResponse(c, http.StatusNotFound, models.ErrNotFoundChatRoom, fmt.Errorf("not found chat room, err : %w", err))
@@ -113,7 +113,7 @@ func (r *RoomController) GetChatRoom(c *gin.Context) {
 
 func (r *RoomController) UpdateChatRoom(c *gin.Context) {
 
-	roomId := c.Param("roomId")
+	roomId := c.Param("room_id")
 	req := models.RoomRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		r.failResponse(c, http.StatusBadRequest, models.ErrParsing, fmt.Errorf("UpdateChatRoom json parsing err : %w", err))
@@ -151,7 +151,7 @@ func (r *RoomController) UpdateChatRoom(c *gin.Context) {
 
 func (r *RoomController) DeleteChatRoom(c *gin.Context) {
 
-	roomId := c.Param("roomId")
+	roomId := c.Param("room_id")
 	isExist, err := r.RoomUseCase.CheckExistRoomId(c, roomId)
 	if err != nil {
 		r.failResponse(c, http.StatusInternalServerError, models.ErrRedisExistError, fmt.Errorf("fail exec redis exist cmd, err : %w", err))
