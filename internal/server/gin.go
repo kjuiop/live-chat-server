@@ -34,9 +34,9 @@ func NewGinServer(cfg *config.EnvConfig, redis redis.Client) Client {
 	timeout := time.Duration(cfg.Policy.ContextTimeout) * time.Second
 
 	api := router.Group("/api")
-
+	ws := router.Group("/ws")
 	setupSystemGroup(api)
-	setupRoomGroup(api, cfg.Policy, timeout, redis)
+	setupChatRoomGroup(api, ws, cfg.Policy, timeout, redis)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", serverCfg.Port),
@@ -84,15 +84,17 @@ func setupSystemGroup(router *gin.RouterGroup) {
 	router.GET("/panic-test", systemController.OccurPanic)
 }
 
-func setupRoomGroup(router *gin.RouterGroup, cfg config.Policy, timeout time.Duration, redis redis.Client) {
+func setupChatRoomGroup(api *gin.RouterGroup, ws *gin.RouterGroup, cfg config.Policy, timeout time.Duration, redis redis.Client) {
 	rr := repository.NewRoomRepository(redis)
 	ur := usecase.NewRoomUseCase(rr, timeout)
 	roomController := controller.NewRoomController(cfg, ur)
 
-	router.POST("/rooms", roomController.CreateChatRoom)
-	router.GET("/rooms/:roomId", roomController.GetChatRoom)
-	router.PUT("/rooms/:roomId", roomController.UpdateChatRoom)
-	router.DELETE("/rooms/:roomId", roomController.DeleteChatRoom)
+	api.POST("/rooms", roomController.CreateChatRoom)
+	api.GET("/rooms/:room_id", roomController.GetChatRoom)
+	api.PUT("/rooms/:room_id", roomController.UpdateChatRoom)
+	api.DELETE("/rooms/:room_id", roomController.DeleteChatRoom)
+	api.GET("/rooms/id", roomController.GetChatRoomId)
 
-	router.GET("/rooms/id", roomController.GetChatRoomId)
+	chatController := controller.NewChatController(ur)
+	ws.GET("/chat/join/rooms/:room_id/user/:user_id", chatController.JoinChatRoom)
 }
