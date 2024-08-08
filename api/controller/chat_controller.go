@@ -7,7 +7,6 @@ import (
 	"live-chat-server/chat"
 	"live-chat-server/chat/types"
 	"live-chat-server/models"
-	"log"
 	"net/http"
 	"sync"
 )
@@ -69,7 +68,7 @@ func (cc *ChatController) JoinChatRoom(c *gin.Context) {
 
 	socket, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Fatalln(err.Error())
+		cc.failResponse(c, http.StatusConflict, models.ErrNotConnectSocket, fmt.Errorf("failed connect socket, roomId : %s, err : %w", roomId, err))
 		return
 	}
 

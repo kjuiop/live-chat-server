@@ -3,7 +3,7 @@ package chat
 import (
 	"github.com/gorilla/websocket"
 	"live-chat-server/chat/types"
-	"log"
+	"log/slog"
 	"time"
 )
 
@@ -29,7 +29,7 @@ func (c *Client) Write() {
 
 	for msg := range c.Send {
 		if err := c.Socket.WriteJSON(msg); err != nil {
-			log.Fatalln(err.Error())
+			slog.Error("failed write message, err : %v", err)
 		}
 	}
 }
@@ -44,7 +44,7 @@ func (c *Client) Read() {
 			if !websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
 				break
 			} else {
-				log.Fatalln(err.Error())
+				slog.Error("failed read message, err : %v", err)
 			}
 		}
 		msg.Time = time.Now().Unix()
