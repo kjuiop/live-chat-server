@@ -1,4 +1,4 @@
-package models
+package domain
 
 type WebhookRes struct {
 	Text string `json:"text"`

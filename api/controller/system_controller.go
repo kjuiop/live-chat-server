@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"live-chat-server/models"
+	"live-chat-server/domain"
 	"net/http"
 )
 
@@ -15,14 +15,14 @@ func NewSystemController() *SystemController {
 }
 
 func (s *SystemController) GetHealth(c *gin.Context) {
-	c.JSON(http.StatusOK, models.HealthRes{Message: models.GetCustomMessage(models.NoError)})
+	c.JSON(http.StatusOK, domain.HealthRes{Message: domain.GetCustomMessage(domain.NoError)})
 }
 
 func (s *SystemController) OccurPanic(c *gin.Context) {
 
 	requestId, exists := c.Get("request_id")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, models.FailRes{Message: "request not exist"})
+		c.JSON(http.StatusInternalServerError, domain.FailRes{Message: "request not exist"})
 		return
 	}
 

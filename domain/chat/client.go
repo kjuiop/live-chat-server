@@ -2,7 +2,7 @@ package chat
 
 import (
 	"github.com/gorilla/websocket"
-	"live-chat-server/chat/types"
+	"live-chat-server/domain/chat/types"
 	"log/slog"
 	"time"
 )

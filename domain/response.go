@@ -1,4 +1,4 @@
-package models
+package domain
 
 type SuccessRes struct {
 	ErrorCode int         `json:"error_code"`
