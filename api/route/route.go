@@ -17,5 +17,7 @@ func Setup(api, ws *gin.RouterGroup, cfg config.Policy, timeout time.Duration, r
 	ur := usecase.NewRoomUseCase(rr, timeout)
 
 	setupRoomGroup(api, cfg, ur)
-	setupChatGroup(ws, ur)
+
+	cu := usecase.NewChatUseCase(ur, timeout)
+	setupChatGroup(ws, cu)
 }
