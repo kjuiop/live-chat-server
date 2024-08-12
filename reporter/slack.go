@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"live-chat-server/config"
-	"live-chat-server/models"
+	"live-chat-server/domain"
 	"log/slog"
 	"net/http"
 )
@@ -29,7 +29,7 @@ func (s *Slack) SendSlackPanicReport(message string) {
 		return
 	}
 
-	webhookRes := models.NewWebhookRes(message)
+	webhookRes := domain.NewWebhookRes(message)
 	body, err := json.Marshal(webhookRes)
 	if err != nil {
 		slog.Error("fail send panic report, json marshal error", "error", err)
@@ -53,7 +53,7 @@ func (s *Slack) SendInternalErrorReport(message string) {
 		return
 	}
 
-	webhookRes := models.NewWebhookRes(message)
+	webhookRes := domain.NewWebhookRes(message)
 	body, err := json.Marshal(webhookRes)
 	if err != nil {
 		slog.Error("fail send internal json marshal error, message is empty", "error", err)

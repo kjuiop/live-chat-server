@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"live-chat-server/domain/room"
 	redis "live-chat-server/internal/redis"
-	"live-chat-server/models"
 	"time"
 )
 
@@ -13,13 +13,13 @@ type roomRepository struct {
 	rdb redis.Client
 }
 
-func NewRoomRepository(client redis.Client) models.RoomRepository {
+func NewRoomRepository(client redis.Client) room.RoomRepository {
 	return &roomRepository{
 		rdb: client,
 	}
 }
 
-func (r *roomRepository) Create(ctx context.Context, room *models.RoomInfo) error {
+func (r *roomRepository) Create(ctx context.Context, room *room.RoomInfo) error {
 
 	if err := r.rdb.HSet(ctx, room.GenerateRoomKey(), room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
@@ -33,21 +33,21 @@ func (r *roomRepository) Create(ctx context.Context, room *models.RoomInfo) erro
 
 }
 
-func (r *roomRepository) Fetch(ctx context.Context, key string) (models.RoomInfo, error) {
+func (r *roomRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, error) {
 
 	result, err := r.rdb.HGetAll(ctx, key)
 	if err != nil {
-		return models.RoomInfo{}, fmt.Errorf("fail get room info, err : %w", err)
+		return room.RoomInfo{}, fmt.Errorf("fail get room info, err : %w", err)
 	}
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
-		return models.RoomInfo{}, fmt.Errorf("json marshal err : %w", err)
+		return room.RoomInfo{}, fmt.Errorf("json marshal err : %w", err)
 	}
 
-	var roomInfo models.RoomInfo
+	var roomInfo room.RoomInfo
 	if err := json.Unmarshal(jsonData, &roomInfo); err != nil {
-		return models.RoomInfo{}, fmt.Errorf("json parsing err : %w", err)
+		return room.RoomInfo{}, fmt.Errorf("json parsing err : %w", err)
 	}
 
 	return roomInfo, nil
@@ -63,7 +63,7 @@ func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
 	return isExist, nil
 }
 
-func (r *roomRepository) Update(ctx context.Context, key string, room *models.RoomInfo) error {
+func (r *roomRepository) Update(ctx context.Context, key string, room *room.RoomInfo) error {
 
 	if err := r.rdb.HSet(ctx, room.RoomId, room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
@@ -85,7 +85,7 @@ func (r *roomRepository) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data *models.RoomInfo) error {
+func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data *room.RoomInfo) error {
 
 	jData, err := json.Marshal(data.ConvertRedisData())
 	if err != nil {
@@ -101,16 +101,16 @@ func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data *model
 	return nil
 }
 
-func (r *roomRepository) GetRoomMap(ctx context.Context, key, mapKey string) (models.RoomInfo, error) {
+func (r *roomRepository) GetRoomMap(ctx context.Context, key, mapKey string) (room.RoomInfo, error) {
 
 	result, err := r.rdb.HGet(ctx, key, mapKey)
 	if err != nil {
-		return models.RoomInfo{}, err
+		return room.RoomInfo{}, err
 	}
 
-	var roomInfo models.RoomInfo
+	var roomInfo room.RoomInfo
 	if err := json.Unmarshal([]byte(result), &roomInfo); err != nil {
-		return models.RoomInfo{}, fmt.Errorf("json parsing err : %w", err)
+		return room.RoomInfo{}, fmt.Errorf("json parsing err : %w", err)
 	}
 
 	return roomInfo, nil

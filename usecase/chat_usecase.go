@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"live-chat-server/chat"
-	"live-chat-server/chat/types"
-	"live-chat-server/models"
+	"live-chat-server/domain/chat"
+	"live-chat-server/domain/chat/types"
+	"live-chat-server/domain/room"
 	"net/http"
 	"sync"
 	"time"
@@ -23,12 +23,12 @@ var upgrader = &websocket.Upgrader{
 }
 
 type chatUseCase struct {
-	roomUseCase    models.RoomUseCase
+	roomUseCase    room.RoomUseCase
 	contextTimeout time.Duration
 	hub            map[string]*chat.Room
 }
 
-func NewChatUseCase(roomRepository models.RoomUseCase, timeout time.Duration) models.ChatUseCase {
+func NewChatUseCase(roomRepository room.RoomUseCase, timeout time.Duration) chat.ChatUseCase {
 	return &chatUseCase{
 		roomUseCase:    roomRepository,
 		contextTimeout: timeout,

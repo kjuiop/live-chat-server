@@ -1,6 +1,8 @@
 package chat
 
-import "live-chat-server/models"
+import (
+	"live-chat-server/domain/room"
+)
 
 type Room struct {
 	RoomId string `json:"RoomId"`
@@ -15,8 +17,8 @@ type Room struct {
 	Clients map[*Client]bool // 현재 방에 있는 Client 정보를 저장
 }
 
-func NewChatRoom(roomInfo models.RoomInfo) *Room {
-	room := &Room{
+func NewChatRoom(roomInfo room.RoomInfo) *Room {
+	chatRoom := &Room{
 		RoomId:  roomInfo.RoomId,
 		Alive:   true,
 		Forward: make(chan *message),
@@ -24,8 +26,8 @@ func NewChatRoom(roomInfo models.RoomInfo) *Room {
 		Leave:   make(chan *Client),
 		Clients: make(map[*Client]bool),
 	}
-	room.chatInit()
-	return room
+	chatRoom.chatInit()
+	return chatRoom
 }
 
 func (r *Room) chatInit() {

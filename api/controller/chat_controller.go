@@ -3,17 +3,17 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"live-chat-server/chat"
-	"live-chat-server/models"
+	"live-chat-server/domain"
+	"live-chat-server/domain/chat"
 	"net/http"
 )
 
 type ChatController struct {
-	ChatUseCase models.ChatUseCase
+	ChatUseCase chat.ChatUseCase
 	hub         map[string]*chat.Room
 }
 
-func NewChatController(chatUseCase models.ChatUseCase) *ChatController {
+func NewChatController(chatUseCase chat.ChatUseCase) *ChatController {
 	return &ChatController{
 		ChatUseCase: chatUseCase,
 		hub:         make(map[string]*chat.Room),
@@ -21,24 +21,24 @@ func NewChatController(chatUseCase models.ChatUseCase) *ChatController {
 }
 
 func (cc *ChatController) successResponse(c *gin.Context, statusCode int, data interface{}) {
-	c.JSON(statusCode, models.SuccessRes{
-		ErrorCode: models.NoError,
-		Message:   models.GetCustomMessage(models.NoError),
+	c.JSON(statusCode, domain.SuccessRes{
+		ErrorCode: domain.NoError,
+		Message:   domain.GetCustomMessage(domain.NoError),
 		Result:    data,
 	})
 }
 
 func (cc *ChatController) failResponse(c *gin.Context, statusCode, errorCode int, err error) {
 
-	logMessage := models.GetCustomErrMessage(errorCode, err.Error())
+	logMessage := domain.GetCustomErrMessage(errorCode, err.Error())
 	c.Errors = append(c.Errors, &gin.Error{
 		Err:  fmt.Errorf(logMessage),
 		Type: gin.ErrorTypePrivate,
 	})
 
-	c.JSON(statusCode, models.FailRes{
+	c.JSON(statusCode, domain.FailRes{
 		ErrorCode: errorCode,
-		Message:   models.GetCustomMessage(errorCode),
+		Message:   domain.GetCustomMessage(errorCode),
 	})
 }
 
@@ -48,11 +48,11 @@ func (cc *ChatController) ServeWs(c *gin.Context) {
 	userId := c.Param("user_id")
 
 	if err := cc.ChatUseCase.ServeWs(c, c.Writer, c.Request, roomId, userId); err != nil {
-		cc.failResponse(c, http.StatusBadRequest, models.ErrNotFoundChatRoom, fmt.Errorf("not found chat room, roomId : %s, err : %w", roomId, err))
+		cc.failResponse(c, http.StatusBadRequest, domain.ErrNotFoundChatRoom, fmt.Errorf("not found chat room, roomId : %s, err : %w", roomId, err))
 		return
 	}
 
-	cc.successResponse(c, http.StatusOK, models.SuccessRes{
+	cc.successResponse(c, http.StatusOK, domain.SuccessRes{
 		ErrorCode: 0,
 		Message:   "close chat connection",
 		Result:    nil,

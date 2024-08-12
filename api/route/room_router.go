@@ -4,10 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"live-chat-server/api/controller"
 	"live-chat-server/config"
-	"live-chat-server/models"
+	"live-chat-server/domain/room"
 )
 
-func setupRoomGroup(api *gin.RouterGroup, cfg config.Policy, ur models.RoomUseCase) {
+func setupRoomGroup(api *gin.RouterGroup, cfg config.Policy, ur room.RoomUseCase) {
 
 	roomController := controller.NewRoomController(cfg, ur)
 	api.POST("/rooms", roomController.CreateChatRoom)
