@@ -4,4 +4,5 @@ type message struct {
 	SendUserId string
 	Message    string
 	Time       int64
+	Method     string
 }

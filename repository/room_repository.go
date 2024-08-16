@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"live-chat-server/domain/room"
 	redis "live-chat-server/internal/redis"
+	"strconv"
 	"time"
 )
 
@@ -40,7 +41,19 @@ func (r *roomRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, 
 		return room.RoomInfo{}, fmt.Errorf("fail get room info, err : %w", err)
 	}
 
-	jsonData, err := json.Marshal(result)
+	// redis 는 하나의 json 문자열로 반환하기 때문에 안의 데이터타입을 변경하기 위해서는 아래와 같은 매핑 작업을 필요로 함
+	data := make(map[string]interface{})
+	for k, v := range result {
+		if k == "created_at" {
+			createdAt, _ := strconv.Atoi(v)
+			data[k] = createdAt
+			continue
+		} else {
+			data[k] = v
+		}
+	}
+
+	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return room.RoomInfo{}, fmt.Errorf("json marshal err : %w", err)
 	}
@@ -65,11 +78,11 @@ func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
 
 func (r *roomRepository) Update(ctx context.Context, key string, room *room.RoomInfo) error {
 
-	if err := r.rdb.HSet(ctx, room.RoomId, room.ConvertRedisData()); err != nil {
+	if err := r.rdb.HSet(ctx, key, room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
-	if err := r.rdb.Expire(ctx, room.RoomId, time.Duration(room.RoomIdTTLDay*24)*time.Hour); err != nil {
+	if err := r.rdb.Expire(ctx, key, time.Duration(room.RoomIdTTLDay*24)*time.Hour); err != nil {
 		return fmt.Errorf("create chat room key fail set ttl, key : %s, err : %w", room.RoomId, err)
 	}
 

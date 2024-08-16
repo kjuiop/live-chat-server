@@ -61,6 +61,7 @@ func UpdateRoomInfo(req *RoomRequest, roomId string) *RoomInfo {
 		CustomerId:   req.CustomerId,
 		ChannelKey:   req.ChannelKey,
 		BroadcastKey: req.BroadCastKey,
+		RoomIdTTLDay: LiveChatRoomKeyTTL,
 	}
 }
 

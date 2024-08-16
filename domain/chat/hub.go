@@ -26,7 +26,7 @@ func NewChatRoom(roomInfo room.RoomInfo) *Room {
 		Leave:   make(chan *Client),
 		Clients: make(map[*Client]bool),
 	}
-	chatRoom.chatInit()
+	go chatRoom.chatInit()
 	return chatRoom
 }
 
@@ -40,10 +40,17 @@ func (r *Room) chatInit() {
 			close(client.Send)
 			delete(r.Clients, client)
 		case msg := <-r.Forward:
-			for client := range r.Clients {
-				client.Send <- msg
+			// msg type 에 따른 분기 처리 가능
+			switch msg.Method {
+			case "chat":
+				r.broadcastChat(msg)
 			}
 		}
 	}
+}
 
+func (r *Room) broadcastChat(msg *message) {
+	for client := range r.Clients {
+		client.Send <- msg
+	}
 }
