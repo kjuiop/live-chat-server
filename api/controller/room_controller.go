@@ -159,6 +159,7 @@ func (r *RoomController) DeleteChatRoom(c *gin.Context) {
 		return
 	}
 
+	// 204 status 일 때에는 response body 를 전달하지 않는다.
 	if !isExist {
 		r.successResponse(c, http.StatusNoContent, nil)
 		return

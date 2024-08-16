@@ -49,6 +49,10 @@ func (r *redisClient) HGetAll(ctx context.Context, key string) (map[string]strin
 		return nil, fmt.Errorf("fail get data hgetall, err : %w", err)
 	}
 
+	if len(result) == 0 {
+		return nil, fmt.Errorf("not exist room key : %s", key)
+	}
+
 	return result, nil
 }
 
