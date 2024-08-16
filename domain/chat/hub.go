@@ -26,7 +26,7 @@ func NewChatRoom(roomInfo room.RoomInfo) *Room {
 		Leave:   make(chan *Client),
 		Clients: make(map[*Client]bool),
 	}
-	chatRoom.chatInit()
+	go chatRoom.chatInit()
 	return chatRoom
 }
 
