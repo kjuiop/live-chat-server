@@ -50,13 +50,13 @@ func (r *RoomController) CreateChatRoom(c *gin.Context) {
 		return
 	}
 
-	roomInfo := room.NewRoomInfo(&req, r.cfg.Prefix)
-	if err := r.RoomUseCase.CreateChatRoom(c, roomInfo); err != nil {
+	roomInfo := room.NewRoomInfo(req, r.cfg.Prefix)
+	if err := r.RoomUseCase.CreateChatRoom(c, *roomInfo); err != nil {
 		r.failResponse(c, http.StatusInternalServerError, domain.ErrRedisHMSETError, fmt.Errorf("CreateRoom HMSET err : %w", err))
 		return
 	}
 
-	if err := r.RoomUseCase.RegisterRoomId(c, roomInfo); err != nil {
+	if err := r.RoomUseCase.RegisterRoomId(c, *roomInfo); err != nil {
 		r.failResponse(c, http.StatusInternalServerError, domain.ErrRedisHMSETError, fmt.Errorf("register room id HMSET err : %w", err))
 		return
 	}
@@ -132,8 +132,8 @@ func (r *RoomController) UpdateChatRoom(c *gin.Context) {
 		return
 	}
 
-	roomInfo := room.UpdateRoomInfo(&req, roomId)
-	savedInfo, err := r.RoomUseCase.UpdateChatRoom(c, roomId, roomInfo)
+	roomInfo := room.UpdateRoomInfo(req, roomId)
+	savedInfo, err := r.RoomUseCase.UpdateChatRoom(c, roomId, *roomInfo)
 	if err != nil {
 		r.failResponse(c, http.StatusInternalServerError, domain.ErrRedisHMSETError, fmt.Errorf("fail exec redis save cmd, err : %w", err))
 		return

@@ -19,7 +19,7 @@ func NewRoomUseCase(roomRepository room.RoomRepository, timeout time.Duration) r
 	}
 }
 
-func (r *roomUseCase) CreateChatRoom(c context.Context, room *room.RoomInfo) error {
+func (r *roomUseCase) CreateChatRoom(c context.Context, room room.RoomInfo) error {
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
@@ -50,7 +50,7 @@ func (r *roomUseCase) CheckExistRoomId(c context.Context, roomId string) (bool, 
 	return isExist, nil
 }
 
-func (r *roomUseCase) UpdateChatRoom(c context.Context, roomId string, roomInfo *room.RoomInfo) (room.RoomInfo, error) {
+func (r *roomUseCase) UpdateChatRoom(c context.Context, roomId string, roomInfo room.RoomInfo) (room.RoomInfo, error) {
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
@@ -77,7 +77,7 @@ func (r *roomUseCase) DeleteChatRoom(c context.Context, roomId string) error {
 	return nil
 }
 
-func (r *roomUseCase) RegisterRoomId(c context.Context, roomInfo *room.RoomInfo) error {
+func (r *roomUseCase) RegisterRoomId(c context.Context, roomInfo room.RoomInfo) error {
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
