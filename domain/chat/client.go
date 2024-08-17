@@ -51,10 +51,10 @@ func (c *Client) Read() {
 		if err := c.Socket.ReadJSON(&msg); err != nil {
 			if !websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNoStatusReceived) {
 				break
-			} else {
-				slog.Error("failed read message, err : %s", err.Error())
-				continue
 			}
+
+			slog.Error("failed read message, client_id : %s, err : %s", c.userId, err.Error())
+			continue
 		}
 		msg.Time = time.Now().Unix()
 		msg.SendUserId = c.userId

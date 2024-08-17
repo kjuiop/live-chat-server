@@ -35,10 +35,6 @@ func SlogInit(cfg config.Logger) error {
 		Level:     logLevel,
 		AddSource: true,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-			if a.Key == slog.SourceKey {
-				s := a.Value.Any().(*slog.Source)
-				s.File = getSimplePath(2)
-			}
 			return a
 		},
 	})
