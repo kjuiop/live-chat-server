@@ -2,6 +2,7 @@ package chat
 
 import (
 	"live-chat-server/domain/room"
+	"log/slog"
 )
 
 type Room struct {
@@ -35,15 +36,19 @@ func (r *Room) chatInit() {
 		select {
 		case client := <-r.Join:
 			r.Clients[client] = true
+			slog.Info("join", "client_id", client.userId, "room_id", client.Room.RoomId)
 		case client := <-r.Leave:
 			r.Clients[client] = false
 			close(client.Send)
 			delete(r.Clients, client)
+			slog.Info("leave", "client_id", client.userId, "room_id", client.Room.RoomId)
 		case msg := <-r.Forward:
 			// msg type 에 따른 분기 처리 가능
 			switch msg.Method {
 			case "chat":
 				r.broadcastChat(msg)
+				slog.Info("leave", "send_user_id", msg.SendUserId, "chat_message", msg.Message)
+			default:
 			}
 		}
 	}
