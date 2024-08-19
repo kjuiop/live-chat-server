@@ -14,8 +14,17 @@ func NewSystemController() *SystemController {
 	return &SystemController{}
 }
 
+func (s *SystemController) successResponse(c *gin.Context, statusCode int, data interface{}) {
+	c.JSON(statusCode, domain.SuccessRes{
+		ErrorCode: domain.NoError,
+		Message:   domain.GetCustomMessage(domain.NoError),
+		Result:    data,
+	})
+}
+
 func (s *SystemController) GetHealth(c *gin.Context) {
-	c.JSON(http.StatusOK, domain.HealthRes{Message: domain.GetCustomMessage(domain.NoError)})
+	s.successResponse(c, http.StatusOK, nil)
+	return
 }
 
 func (s *SystemController) OccurPanic(c *gin.Context) {

@@ -51,9 +51,5 @@ func (c *EnvConfig) CheckValid() error {
 		return fmt.Errorf("check, redis addr is empty")
 	}
 
-	if c.Slack.WebhookReportUrl == "" {
-		return fmt.Errorf("check, slack webhook report url is empty")
-	}
-
 	return nil
 }
