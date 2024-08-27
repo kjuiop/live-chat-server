@@ -18,7 +18,7 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 		expectedCode int
 		title        string
 		request      room.RoomRequest
-		expectedResp domain.SuccessRes
+		expectedResp domain.ApiResponse
 	}{
 		{
 			expectedCode: http.StatusCreated, title: "Create Chat Room test success case",
@@ -27,7 +27,7 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 				ChannelKey:   "calksdjfkdsa",
 				BroadCastKey: "20240721-askdflj",
 			},
-			expectedResp: domain.SuccessRes{
+			expectedResp: domain.ApiResponse{
 				ErrorCode: domain.NoError,
 				Message:   "ok",
 				Result: room.RoomResponse{
@@ -57,7 +57,7 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
-			var responseBody *domain.SuccessRes
+			var responseBody *domain.ApiResponse
 			if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
 				t.Fatal(err)
 			}

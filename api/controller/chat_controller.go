@@ -21,7 +21,7 @@ func NewChatController(chatUseCase chat.ChatUseCase) *ChatController {
 }
 
 func (cc *ChatController) successResponse(c *gin.Context, statusCode int, data interface{}) {
-	c.JSON(statusCode, domain.SuccessRes{
+	c.JSON(statusCode, domain.ApiResponse{
 		ErrorCode: domain.NoError,
 		Message:   domain.GetCustomMessage(domain.NoError),
 		Result:    data,
@@ -36,7 +36,7 @@ func (cc *ChatController) failResponse(c *gin.Context, statusCode, errorCode int
 		Type: gin.ErrorTypePrivate,
 	})
 
-	c.JSON(statusCode, domain.FailRes{
+	c.JSON(statusCode, domain.ApiResponse{
 		ErrorCode: errorCode,
 		Message:   domain.GetCustomMessage(errorCode),
 	})
@@ -52,7 +52,7 @@ func (cc *ChatController) ServeWs(c *gin.Context) {
 		return
 	}
 
-	cc.successResponse(c, http.StatusOK, domain.SuccessRes{
+	cc.successResponse(c, http.StatusOK, domain.ApiResponse{
 		ErrorCode: 0,
 		Message:   "close chat connection",
 		Result:    nil,

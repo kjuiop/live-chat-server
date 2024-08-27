@@ -22,7 +22,7 @@ func NewRoomController(cfg config.Policy, useCase room.RoomUseCase) *RoomControl
 }
 
 func (r *RoomController) successResponse(c *gin.Context, statusCode int, data interface{}) {
-	c.JSON(statusCode, domain.SuccessRes{
+	c.JSON(statusCode, domain.ApiResponse{
 		ErrorCode: domain.NoError,
 		Message:   domain.GetCustomMessage(domain.NoError),
 		Result:    data,
@@ -37,7 +37,7 @@ func (r *RoomController) failResponse(c *gin.Context, statusCode, errorCode int,
 		Type: gin.ErrorTypePrivate,
 	})
 
-	c.JSON(statusCode, domain.FailRes{
+	c.JSON(statusCode, domain.ApiResponse{
 		ErrorCode: errorCode,
 		Message:   domain.GetCustomMessage(errorCode),
 	})

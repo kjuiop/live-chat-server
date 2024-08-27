@@ -15,7 +15,7 @@ func NewSystemController() *SystemController {
 }
 
 func (s *SystemController) successResponse(c *gin.Context, statusCode int, data interface{}) {
-	c.JSON(statusCode, domain.SuccessRes{
+	c.JSON(statusCode, domain.ApiResponse{
 		ErrorCode: domain.NoError,
 		Message:   domain.GetCustomMessage(domain.NoError),
 		Result:    data,
@@ -31,7 +31,7 @@ func (s *SystemController) OccurPanic(c *gin.Context) {
 
 	requestId, exists := c.Get("request_id")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, domain.FailRes{Message: "request not exist"})
+		c.JSON(http.StatusInternalServerError, domain.ApiResponse{Message: "request not exist"})
 		return
 	}
 

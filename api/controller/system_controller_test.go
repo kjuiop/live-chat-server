@@ -15,13 +15,13 @@ func TestGetHealthSuccess(t *testing.T) {
 	tests := []struct {
 		expectedCode int
 		title        string
-		response     domain.SuccessRes
+		response     domain.ApiResponse
 	}{
 		{
-			http.StatusOK, "health-check api test", domain.SuccessRes{
-				ErrorCode: domain.NoError,
-				Message:   domain.GetCustomMessage(domain.NoError),
-			},
+			http.StatusOK, "health-check api test", domain.ApiResponse{
+			ErrorCode: domain.NoError,
+			Message:   domain.GetCustomMessage(domain.NoError),
+		},
 		},
 	}
 
@@ -36,7 +36,7 @@ func TestGetHealthSuccess(t *testing.T) {
 			systemController.GetHealth(c)
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
-			var responseBody domain.SuccessRes
+			var responseBody domain.ApiResponse
 			err := json.Unmarshal(resp.Body.Bytes(), &responseBody)
 			testAssert.NoError(err)
 			testAssert.Equal(tc.response.ErrorCode, responseBody.ErrorCode)
