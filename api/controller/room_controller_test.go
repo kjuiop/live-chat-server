@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestRoomController_CreateChatRoom(t *testing.T) {
+func TestRoomController_CreateChatRoom_Success(t *testing.T) {
 
 	tests := []struct {
 		expectedCode int
@@ -39,13 +39,72 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 				},
 			},
 		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.title, func(t *testing.T) {
+			testAssert := assert.New(t)
+			resp := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(resp)
+
+			jsonRequest, err := convertToBytes(tc.request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			c.Request = httptest.NewRequest(http.MethodPost, "/api/rooms", bytes.NewBuffer(jsonRequest))
+
+			roomController.CreateChatRoom(c)
+
+			testAssert.Equal(tc.expectedCode, resp.Code)
+
+			var responseBody *domain.ApiResponse
+			if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
+				t.Fatal(err)
+			}
+
+			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
+			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
+
+			// response body 검증
+			if tc.expectedCode == http.StatusCreated {
+
+				testAssert.NotNil(responseBody.Result)
+
+				var roomResp room.RoomResponse
+				if err := convertResultTo(responseBody.Result, &roomResp); err != nil {
+					t.Fatal(err)
+				}
+
+				testAssert.NotEmpty(roomResp.RoomId, "room_id is not empty")
+				testAssert.True(roomResp.CreatedAt > 0, "created_at should be large to 0")
+
+				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).CustomerId, roomResp.CustomerId)
+				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).ChannelKey, roomResp.ChannelKey)
+				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).BroadcastKey, roomResp.BroadcastKey)
+			}
+		})
+	}
+}
+
+func TestRoomController_CreateChatRoom_Fail(t *testing.T) {
+
+	tests := []struct {
+		expectedCode int
+		title        string
+		request      map[string]interface{}
+		expectedResp domain.ApiResponse
+	}{
 		{
-			expectedCode: http.StatusBadRequest, title: "Create Chat Room Bad Request Fail case",
-			request: room.RoomRequest{
-				CustomerId:   "jungin-kim",
-				ChannelKey:   "",
-				BroadCastKey: "20240721-askdflj",
+			expectedCode: http.StatusBadRequest, title: "empty request param",
+			request: map[string]interface{}{},
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrParsing,
+				Message:   "invalid request body",
 			},
+		},
+		{
+			expectedCode: http.StatusBadRequest, title: "invalid data type field",
+			request: map[string]interface{}{"customer_id": 1, "channel_key": 1, "broadcast_key": 1},
 			expectedResp: domain.ApiResponse{
 				ErrorCode: domain.ErrParsing,
 				Message:   "invalid request body",
@@ -76,23 +135,6 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 
 			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
 			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
-
-			if tc.expectedCode == http.StatusCreated {
-
-				testAssert.NotNil(responseBody.Result)
-
-				var roomResp room.RoomResponse
-				if err := convertResultTo(responseBody.Result, &roomResp); err != nil {
-					t.Fatal(err)
-				}
-
-				testAssert.NotEmpty(roomResp.RoomId, "room_id is not empty")
-				testAssert.True(roomResp.CreatedAt > 0, "created_at should be large to 0")
-
-				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).CustomerId, roomResp.CustomerId)
-				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).ChannelKey, roomResp.ChannelKey)
-				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).BroadcastKey, roomResp.BroadcastKey)
-			}
 		})
 	}
 }
