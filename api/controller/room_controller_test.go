@@ -18,7 +18,7 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 		expectedCode int
 		title        string
 		request      room.RoomRequest
-		response     domain.SuccessRes
+		expectedResp domain.SuccessRes
 	}{
 		{
 			expectedCode: http.StatusCreated, title: "Create Chat Room test success case",
@@ -27,7 +27,7 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 				ChannelKey:   "calksdjfkdsa",
 				BroadCastKey: "20240721-askdflj",
 			},
-			response: domain.SuccessRes{
+			expectedResp: domain.SuccessRes{
 				ErrorCode: domain.NoError,
 				Message:   "ok",
 				Result: room.RoomResponse{
@@ -47,26 +47,40 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 			resp := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(resp)
 
-			jsonRequest, err := json.Marshal(tc.request)
+			jsonRequest, err := convertToBytes(tc.request)
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			c.Request = httptest.NewRequest(http.MethodPost, "/api/rooms", bytes.NewBuffer(jsonRequest))
 
 			roomController.CreateChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
-			var responseBody domain.SuccessRes
+			var responseBody *domain.SuccessRes
 			if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
 				t.Fatal(err)
 			}
 
-			testAssert.NoError(err)
+			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
+			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
 
-			testAssert.Equal(tc.response.ErrorCode, responseBody.ErrorCode)
-			testAssert.Equal(tc.response.Message, responseBody.Message)
+			if tc.expectedCode == http.StatusCreated {
+
+				testAssert.NotNil(responseBody.Result)
+
+				var roomResp room.RoomResponse
+				if err := convertResultTo(responseBody.Result, &roomResp); err != nil {
+					t.Fatal(err)
+				}
+
+				testAssert.NotEmpty(roomResp.RoomId, "room_id is not empty")
+				testAssert.True(roomResp.CreatedAt > 0, "created_at should be large to 0")
+
+				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).CustomerId, roomResp.CustomerId)
+				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).ChannelKey, roomResp.ChannelKey)
+				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).BroadcastKey, roomResp.BroadcastKey)
+			}
 		})
 	}
 }
