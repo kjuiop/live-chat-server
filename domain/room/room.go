@@ -17,9 +17,9 @@ const (
 )
 
 type RoomRequest struct {
-	CustomerId   string `json:"customer_id"`
-	ChannelKey   string `json:"channel_key"`
-	BroadCastKey string `json:"broadcast_key"`
+	CustomerId   string `json:"customer_id" binding:"required"`
+	ChannelKey   string `json:"channel_key" binding:"required"`
+	BroadCastKey string `json:"broadcast_key" binding:"required"`
 }
 
 type RoomIdRequest struct {

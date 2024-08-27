@@ -39,6 +39,18 @@ func TestRoomController_CreateChatRoom(t *testing.T) {
 				},
 			},
 		},
+		{
+			expectedCode: http.StatusBadRequest, title: "Create Chat Room Bad Request Fail case",
+			request: room.RoomRequest{
+				CustomerId:   "jungin-kim",
+				ChannelKey:   "",
+				BroadCastKey: "20240721-askdflj",
+			},
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrParsing,
+				Message:   "invalid request body",
+			},
+		},
 	}
 
 	for _, tc := range tests {
