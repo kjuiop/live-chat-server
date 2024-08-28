@@ -11,6 +11,7 @@ const (
 	ErrParsing              = 4001
 	ErrNotFoundChatRoom     = 4002
 	ErrNotConnectSocket     = 4003
+	ErrEmptyParam           = 4004
 	ErrRedisHMSETError      = 5001
 	ErrRedisExistError      = 5002
 	ErrRedisHMDELError      = 5003
@@ -21,6 +22,7 @@ var codeToMessage = map[int]string{
 	ErrParsing:          "invalid request body",
 	ErrNotFoundChatRoom: "not found chat room",
 	ErrNotConnectSocket: "not connect socket",
+	ErrEmptyParam:       "invalid params",
 	ErrRedisHMSETError:  InternalRedisError,
 	ErrRedisExistError:  InternalRedisError,
 	ErrRedisHMDELError:  InternalRedisError,

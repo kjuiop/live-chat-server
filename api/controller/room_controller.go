@@ -96,7 +96,7 @@ func (r *RoomController) GetChatRoom(c *gin.Context) {
 
 	roomId := c.Param("room_id")
 	if len(roomId) == 0 {
-		r.failResponse(c, http.StatusBadRequest, domain.ErrParsing, fmt.Errorf("not exist room id, err : %s", roomId))
+		r.failResponse(c, http.StatusBadRequest, domain.ErrEmptyParam, fmt.Errorf("not exist room id, err : %s", roomId))
 		return
 	}
 

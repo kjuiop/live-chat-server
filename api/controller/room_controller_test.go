@@ -203,3 +203,54 @@ func TestRoomController_GetChatRoom_Success(t *testing.T) {
 		})
 	}
 }
+
+func TestRoomController_GetChatRoom_Fail(t *testing.T) {
+
+	tests := []struct {
+		expectedCode int
+		title        string
+		roomId       string
+		expectedResp domain.ApiResponse
+	}{
+		{
+			expectedCode: http.StatusBadRequest, title: "Get Chat Room test fail case, empty room_id",
+			roomId: "",
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrEmptyParam,
+				Message:   "invalid params",
+			},
+		},
+		{
+			expectedCode: http.StatusNotFound, title: "Get Chat Room test fail case, not exist",
+			roomId: "N1-NOT_EXIST_ROOM_ID",
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrNotFoundChatRoom,
+				Message:   "not found chat room",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.title, func(t *testing.T) {
+			testAssert := assert.New(t)
+			resp := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(resp)
+
+			c.Request = httptest.NewRequest(http.MethodGet, "/api/rooms", nil)
+			c.Params = gin.Params{
+				{Key: "room_id", Value: tc.roomId},
+			}
+			roomController.GetChatRoom(c)
+
+			testAssert.Equal(tc.expectedCode, resp.Code)
+
+			var responseBody *domain.ApiResponse
+			if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
+				t.Fatal(err)
+			}
+
+			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
+			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
+		})
+	}
+}
