@@ -19,9 +19,9 @@ func TestGetHealthSuccess(t *testing.T) {
 	}{
 		{
 			http.StatusOK, "health-check api test", domain.ApiResponse{
-			ErrorCode: domain.NoError,
-			Message:   domain.GetCustomMessage(domain.NoError),
-		},
+				ErrorCode: domain.NoError,
+				Message:   domain.GetCustomMessage(domain.NoError),
+			},
 		},
 	}
 

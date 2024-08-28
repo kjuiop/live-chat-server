@@ -138,3 +138,68 @@ func TestRoomController_CreateChatRoom_Fail(t *testing.T) {
 		})
 	}
 }
+
+func TestRoomController_GetChatRoom_Success(t *testing.T) {
+
+	tests := []struct {
+		expectedCode int
+		title        string
+		roomId       string
+		expectedResp domain.ApiResponse
+	}{
+		{
+			expectedCode: http.StatusOK, title: "Get Chat Room test success case",
+			roomId: "N1-TESTMRM3M9AA83QT3RNHYRJ9RP",
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.NoError,
+				Message:   "ok",
+				Result: room.RoomResponse{
+					RoomId:       "N1-TESTMRM3M9AA83QT3RNHYRJ9RP",
+					CustomerId:   "jungin-kim",
+					ChannelKey:   "calksdjfkdsa",
+					BroadcastKey: "20240721-askdflj",
+					CreatedAt:    1724052541,
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.title, func(t *testing.T) {
+			testAssert := assert.New(t)
+			resp := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(resp)
+
+			c.Request = httptest.NewRequest(http.MethodGet, "/api/rooms", nil)
+			c.Params = gin.Params{
+				{Key: "room_id", Value: tc.roomId},
+			}
+			roomController.GetChatRoom(c)
+
+			testAssert.Equal(tc.expectedCode, resp.Code)
+
+			var responseBody *domain.ApiResponse
+			if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
+				t.Fatal(err)
+			}
+
+			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
+			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
+
+			// response body 검증
+			testAssert.NotNil(responseBody.Result)
+
+			var roomResp room.RoomResponse
+			if err := convertResultTo(responseBody.Result, &roomResp); err != nil {
+				t.Fatal(err)
+			}
+
+			testAssert.NotEmpty(roomResp.RoomId, "room_id is not empty")
+			testAssert.True(roomResp.CreatedAt > 0, "created_at should be large to 0")
+
+			testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).CustomerId, roomResp.CustomerId)
+			testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).ChannelKey, roomResp.ChannelKey)
+			testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).BroadcastKey, roomResp.BroadcastKey)
+		})
+	}
+}

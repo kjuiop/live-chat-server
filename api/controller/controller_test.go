@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"live-chat-server/config"
+	"live-chat-server/domain/room"
 	"live-chat-server/usecase/mocks"
 	"log"
 	"os"
@@ -16,16 +18,29 @@ var (
 	roomController   *RoomController
 )
 
+//go:embed testdata/rooms/init_data.json
+var initRooms embed.FS
+
 func TestMain(m *testing.M) {
 
 	systemController = NewSystemController()
 
 	cfg, err := config.LoadEnvConfig()
 	if err != nil {
-		log.Fatalf("fail to read config err : %v\n", err)
+		log.Fatalf("fail to read config err : %v", err)
 	}
 
-	us := mocks.NewRoomUseCaseStub()
+	data, err := initRooms.ReadFile("testdata/rooms/init_data.json")
+	if err != nil {
+		log.Fatalf("failed to read embedded file: %v", err)
+	}
+
+	var roomInfo []room.RoomInfo
+	if err := json.Unmarshal(data, &roomInfo); err != nil {
+		log.Fatalf("failed to unmarshal JSON: %v", err)
+	}
+
+	us := mocks.NewRoomUseCaseStub(roomInfo)
 	roomController = NewRoomController(cfg.Policy, us)
 
 	gin.SetMode(gin.TestMode)
