@@ -22,7 +22,7 @@ func NewRoomController(cfg config.Policy, useCase room.RoomUseCase) *RoomControl
 }
 
 func (r *RoomController) successResponse(c *gin.Context, statusCode int, data interface{}) {
-	c.JSON(statusCode, domain.SuccessRes{
+	c.JSON(statusCode, domain.ApiResponse{
 		ErrorCode: domain.NoError,
 		Message:   domain.GetCustomMessage(domain.NoError),
 		Result:    data,
@@ -37,7 +37,7 @@ func (r *RoomController) failResponse(c *gin.Context, statusCode, errorCode int,
 		Type: gin.ErrorTypePrivate,
 	})
 
-	c.JSON(statusCode, domain.FailRes{
+	c.JSON(statusCode, domain.ApiResponse{
 		ErrorCode: errorCode,
 		Message:   domain.GetCustomMessage(errorCode),
 	})
@@ -95,6 +95,11 @@ func (r *RoomController) GetChatRoomId(c *gin.Context) {
 func (r *RoomController) GetChatRoom(c *gin.Context) {
 
 	roomId := c.Param("room_id")
+	if len(roomId) == 0 {
+		r.failResponse(c, http.StatusBadRequest, domain.ErrEmptyParam, fmt.Errorf("not exist room id, err : %s", roomId))
+		return
+	}
+
 	roomInfo, err := r.RoomUseCase.GetChatRoomById(c, roomId)
 	if err != nil {
 		r.failResponse(c, http.StatusNotFound, domain.ErrNotFoundChatRoom, fmt.Errorf("not found chat room, err : %w", err))
@@ -115,6 +120,11 @@ func (r *RoomController) GetChatRoom(c *gin.Context) {
 func (r *RoomController) UpdateChatRoom(c *gin.Context) {
 
 	roomId := c.Param("room_id")
+	if len(roomId) == 0 {
+		r.failResponse(c, http.StatusBadRequest, domain.ErrEmptyParam, fmt.Errorf("not exist room id, err : %s", roomId))
+		return
+	}
+
 	req := room.RoomRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		r.failResponse(c, http.StatusBadRequest, domain.ErrParsing, fmt.Errorf("UpdateChatRoom json parsing err : %w", err))
