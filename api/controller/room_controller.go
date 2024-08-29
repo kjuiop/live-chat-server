@@ -120,6 +120,11 @@ func (r *RoomController) GetChatRoom(c *gin.Context) {
 func (r *RoomController) UpdateChatRoom(c *gin.Context) {
 
 	roomId := c.Param("room_id")
+	if len(roomId) == 0 {
+		r.failResponse(c, http.StatusBadRequest, domain.ErrEmptyParam, fmt.Errorf("not exist room id, err : %s", roomId))
+		return
+	}
+
 	req := room.RoomRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		r.failResponse(c, http.StatusBadRequest, domain.ErrParsing, fmt.Errorf("UpdateChatRoom json parsing err : %w", err))

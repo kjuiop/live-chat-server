@@ -333,3 +333,80 @@ func TestRoomController_UpdateChatRoom_Success(t *testing.T) {
 		})
 	}
 }
+
+func TestRoomController_UpdateChatRoom_Fail(t *testing.T) {
+
+	tests := []struct {
+		expectedCode int
+		title        string
+		roomId       string
+		request      map[string]interface{}
+		expectedResp domain.ApiResponse
+	}{
+		{
+			expectedCode: http.StatusBadRequest, title: "Update Chat Room empty param",
+			roomId:  "",
+			request: map[string]interface{}{},
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrEmptyParam,
+				Message:   "invalid params",
+			},
+		},
+		{
+			expectedCode: http.StatusBadRequest, title: "Update Chat Room empty request body",
+			roomId:  "N1-TESTMRM3M9AA83QT3RNHYRJ9RP",
+			request: map[string]interface{}{},
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrParsing,
+				Message:   "invalid request body",
+			},
+		},
+		{
+			expectedCode: http.StatusNotFound, title: "Update Chat Room not exist room_id",
+			roomId:  "N1-NOT_EXIST_MRM3M9AA83QT3RNHYRJ9RP",
+			request: map[string]interface{}{"customer_id": "jungin-kim", "channel_key": "calksdjfkdsa", "broadcast_key": "20240721-askdflj"},
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrNotFoundChatRoom,
+				Message:   "not found chat room",
+			},
+		},
+		{
+			expectedCode: http.StatusBadRequest, title: "Update Chat Room invalid request body",
+			roomId:  "N1-TESTMRM3M9AA83QT3RNHYRJ9RP",
+			request: map[string]interface{}{"customer_id": 1, "channel_key": 1, "broadcast_key": 1},
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrParsing,
+				Message:   "invalid request body",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.title, func(t *testing.T) {
+			testAssert := assert.New(t)
+			resp := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(resp)
+
+			jsonRequest, err := convertToBytes(tc.request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			c.Request = httptest.NewRequest(http.MethodPut, "/api/rooms", bytes.NewBuffer(jsonRequest))
+			c.Params = gin.Params{
+				{Key: "room_id", Value: tc.roomId},
+			}
+
+			roomController.UpdateChatRoom(c)
+
+			testAssert.Equal(tc.expectedCode, resp.Code)
+
+			var responseBody *domain.ApiResponse
+			if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
+				t.Fatal(err)
+			}
+
+			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
+			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
+		})
+	}
+}
