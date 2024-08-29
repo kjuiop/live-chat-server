@@ -20,7 +20,7 @@ func NewRoomRepository(client redis.Client) room.RoomRepository {
 	}
 }
 
-func (r *roomRepository) Create(ctx context.Context, room *room.RoomInfo) error {
+func (r *roomRepository) Create(ctx context.Context, room room.RoomInfo) error {
 
 	if err := r.rdb.HSet(ctx, room.GenerateRoomKey(), room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
@@ -76,7 +76,7 @@ func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
 	return isExist, nil
 }
 
-func (r *roomRepository) Update(ctx context.Context, key string, room *room.RoomInfo) error {
+func (r *roomRepository) Update(ctx context.Context, key string, room room.RoomInfo) error {
 
 	if err := r.rdb.HSet(ctx, key, room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
@@ -98,7 +98,7 @@ func (r *roomRepository) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data *room.RoomInfo) error {
+func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data room.RoomInfo) error {
 
 	jData, err := json.Marshal(data.ConvertRedisData())
 	if err != nil {

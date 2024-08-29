@@ -17,9 +17,9 @@ const (
 )
 
 type RoomRequest struct {
-	CustomerId   string `json:"customer_id"`
-	ChannelKey   string `json:"channel_key"`
-	BroadCastKey string `json:"broadcast_key"`
+	CustomerId   string `json:"customer_id" binding:"required"`
+	ChannelKey   string `json:"channel_key" binding:"required"`
+	BroadCastKey string `json:"broadcast_key" binding:"required"`
 }
 
 type RoomIdRequest struct {
@@ -44,7 +44,7 @@ type RoomInfo struct {
 	CreatedAt    int64  `json:"created_at"`
 }
 
-func NewRoomInfo(req *RoomRequest, prefix string) *RoomInfo {
+func NewRoomInfo(req RoomRequest, prefix string) *RoomInfo {
 	return &RoomInfo{
 		RoomId:       fmt.Sprintf("%s-%s", getChatPrefix(prefix), utils.GenUUID()),
 		RoomIdTTLDay: LiveChatRoomKeyTTL,
@@ -55,13 +55,14 @@ func NewRoomInfo(req *RoomRequest, prefix string) *RoomInfo {
 	}
 }
 
-func UpdateRoomInfo(req *RoomRequest, roomId string) *RoomInfo {
+func UpdateRoomInfo(req RoomRequest, roomId string) *RoomInfo {
 	return &RoomInfo{
 		RoomId:       roomId,
 		CustomerId:   req.CustomerId,
 		ChannelKey:   req.ChannelKey,
 		BroadcastKey: req.BroadCastKey,
 		RoomIdTTLDay: LiveChatRoomKeyTTL,
+		CreatedAt:    time.Now().Unix(),
 	}
 }
 
@@ -90,21 +91,21 @@ func getChatPrefix(prefix string) string {
 }
 
 type RoomUseCase interface {
-	CreateChatRoom(ctx context.Context, room *RoomInfo) error
+	CreateChatRoom(ctx context.Context, room RoomInfo) error
 	GetChatRoomById(ctx context.Context, roomId string) (RoomInfo, error)
 	CheckExistRoomId(ctx context.Context, roomId string) (bool, error)
-	UpdateChatRoom(ctx context.Context, roomId string, room *RoomInfo) (RoomInfo, error)
+	UpdateChatRoom(ctx context.Context, roomId string, room RoomInfo) (RoomInfo, error)
 	DeleteChatRoom(ctx context.Context, roomId string) error
-	RegisterRoomId(ctx context.Context, room *RoomInfo) error
+	RegisterRoomId(ctx context.Context, room RoomInfo) error
 	GetChatRoomId(ctx context.Context, room RoomIdRequest) (RoomInfo, error)
 }
 
 type RoomRepository interface {
-	Create(ctx context.Context, data *RoomInfo) error
+	Create(ctx context.Context, data RoomInfo) error
 	Fetch(ctx context.Context, key string) (RoomInfo, error)
 	Exists(ctx context.Context, key string) (bool, error)
-	Update(ctx context.Context, key string, data *RoomInfo) error
+	Update(ctx context.Context, key string, data RoomInfo) error
 	Delete(ctx context.Context, key string) error
-	SetRoomMap(ctx context.Context, key string, data *RoomInfo) error
+	SetRoomMap(ctx context.Context, key string, data RoomInfo) error
 	GetRoomMap(ctx context.Context, key, mapKey string) (RoomInfo, error)
 }

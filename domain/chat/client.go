@@ -24,28 +24,37 @@ func NewClient(socket *websocket.Conn, r *Room, clientId string) *Client {
 }
 
 func (c *Client) Write() {
-	defer c.Socket.Close()
+	defer func() {
+		if err := c.Socket.Close(); err != nil {
+			slog.Error("failed socket connection close, client_id : %s, err : %s", c.userId, err.Error())
+		}
+	}()
 	// client 가 메시지를 전송하는 함수
 
 	for msg := range c.Send {
 		if err := c.Socket.WriteJSON(msg); err != nil {
-			slog.Error("failed write message, err : %v", err)
+			slog.Error("failed write message, client_id : %s, err : %s", c.userId, err.Error())
 		}
 	}
 }
 
 func (c *Client) Read() {
-	defer c.Socket.Close()
-	// client 가 메시지를 읽는 함수
+	defer func() {
+		if err := c.Socket.Close(); err != nil {
+			slog.Error("failed socket connection close, client_id : %s, err : %s", c.userId, err.Error())
+		}
+	}()
 
+	// client 가 메시지를 읽는 함수
 	for {
 		var msg *message
 		if err := c.Socket.ReadJSON(&msg); err != nil {
-			if !websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
+			if !websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNoStatusReceived) {
 				break
-			} else {
-				slog.Error("failed read message, err : %v", err)
 			}
+
+			slog.Error("failed read message, client_id : %s, err : %s", c.userId, err.Error())
+			continue
 		}
 		msg.Time = time.Now().Unix()
 		msg.SendUserId = c.userId

@@ -1,0 +1,18 @@
+[
+  {
+    "room_id" : "N1-TESTMRM3M9AA83QT3RNHYRJ9RP",
+    "room_id_ttl_day": 7,
+    "customer_id": "jungin-kim",
+    "channel_key": "calksdjfkdsa",
+    "broadcast_key": "20240721-askdflj",
+    "created_at": 1724052541
+  },
+  {
+    "room_id" : "N2-TESTMRM3M9AA83QT3RNHYRJ9RP",
+    "room_id_ttl_day": 7,
+    "customer_id": "jungin-kim",
+    "channel_key": "roomid_test",
+    "broadcast_key": "20240721-test",
+    "created_at": 1724052541
+  }
+]
