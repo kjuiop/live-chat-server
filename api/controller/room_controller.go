@@ -163,6 +163,11 @@ func (r *RoomController) UpdateChatRoom(c *gin.Context) {
 func (r *RoomController) DeleteChatRoom(c *gin.Context) {
 
 	roomId := c.Param("room_id")
+	if len(roomId) == 0 {
+		r.failResponse(c, http.StatusBadRequest, domain.ErrEmptyParam, fmt.Errorf("not exist room id, err : %s", roomId))
+		return
+	}
+
 	isExist, err := r.RoomUseCase.CheckExistRoomId(c, roomId)
 	if err != nil {
 		r.failResponse(c, http.StatusInternalServerError, domain.ErrRedisExistError, fmt.Errorf("fail exec redis exist cmd, err : %w", err))

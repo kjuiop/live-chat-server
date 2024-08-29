@@ -410,3 +410,57 @@ func TestRoomController_UpdateChatRoom_Fail(t *testing.T) {
 		})
 	}
 }
+
+func TestRoomController_DeleteChatRoom_Success(t *testing.T) {
+
+	tests := []struct {
+		expectedCode int
+		title        string
+		roomId       string
+		expectedResp domain.ApiResponse
+	}{
+		{
+			expectedCode: http.StatusOK, title: "Delete Chat Room test success case",
+			roomId: "N1-TESTMRM3M9AA83QT3RNHYRJ9RP",
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.NoError,
+				Message:   "ok",
+			},
+		},
+		{
+			expectedCode: http.StatusNoContent, title: "Delete Chat Room test success case, No Content",
+			roomId: "N1-NOT_EXTIST_3M9AA83QT3RNHYRJ9RP",
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.NoError,
+				Message:   "ok",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.title, func(t *testing.T) {
+			testAssert := assert.New(t)
+			resp := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(resp)
+
+			c.Request = httptest.NewRequest(http.MethodDelete, "/api/rooms", nil)
+			c.Params = gin.Params{
+				{Key: "room_id", Value: tc.roomId},
+			}
+
+			roomController.DeleteChatRoom(c)
+
+			testAssert.Equal(tc.expectedCode, resp.Code)
+
+			if tc.expectedCode == http.StatusOK {
+				var responseBody *domain.ApiResponse
+				if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
+					t.Fatal(err)
+				}
+
+				testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
+				testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
+			}
+		})
+	}
+}
