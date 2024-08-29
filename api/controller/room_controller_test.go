@@ -9,6 +9,7 @@ import (
 	"live-chat-server/domain/room"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -510,6 +511,74 @@ func TestRoomController_DeleteChatRoom_Fail(t *testing.T) {
 
 			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
 			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
+		})
+	}
+}
+
+func TestRoomController_GetChatRoomId_Success(t *testing.T) {
+	tests := []struct {
+		expectedCode int
+		title        string
+		request      room.RoomRequest
+		expectedResp domain.ApiResponse
+	}{
+		{
+			expectedCode: http.StatusOK,
+			title:        "Get Chat Room By Id test success case",
+			request: room.RoomRequest{
+				ChannelKey:   "calksdjfkdsa",
+				BroadCastKey: "20240721-askdflj",
+			},
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.NoError,
+				Message:   "ok",
+				Result: room.RoomResponse{
+					RoomId: "N1-TESTMRM3M9AA83QT3RNHYRJ9RP",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.title, func(t *testing.T) {
+			testAssert := assert.New(t)
+			resp := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(resp)
+
+			// 쿼리 파라미터로 변환
+			queryParams := url.Values{}
+			queryParams.Add("channel_key", tc.request.ChannelKey)
+			queryParams.Add("broadcast_key", tc.request.BroadCastKey)
+
+			// 쿼리 파라미터를 포함한 GET 요청 생성
+			c.Request = httptest.NewRequest(http.MethodGet, "/api/rooms/id?"+queryParams.Encode(), nil)
+
+			// 컨트롤러 호출
+			roomController.GetChatRoomId(c)
+
+			// 상태 코드 검증
+			testAssert.Equal(tc.expectedCode, resp.Code)
+
+			// 응답 본문 검증
+			var responseBody *domain.ApiResponse
+			if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
+				t.Fatal(err)
+			}
+
+			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
+			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
+
+			// response body 검증
+			if tc.expectedCode == http.StatusOK {
+				testAssert.NotNil(responseBody.Result)
+
+				var roomResp room.RoomResponse
+				if err := convertResultTo(responseBody.Result, &roomResp); err != nil {
+					t.Fatal(err)
+				}
+
+				testAssert.Equal(tc.expectedResp.Result.(room.RoomResponse).RoomId, roomResp.RoomId)
+			}
 		})
 	}
 }
