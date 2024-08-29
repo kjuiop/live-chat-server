@@ -464,3 +464,52 @@ func TestRoomController_DeleteChatRoom_Success(t *testing.T) {
 		})
 	}
 }
+
+func TestRoomController_DeleteChatRoom_Fail(t *testing.T) {
+	tests := []struct {
+		expectedCode int
+		title        string
+		roomId       string
+		request      map[string]interface{}
+		expectedResp domain.ApiResponse
+	}{
+		{
+			expectedCode: http.StatusBadRequest, title: "Update Chat Room empty param",
+			roomId:  "",
+			request: map[string]interface{}{},
+			expectedResp: domain.ApiResponse{
+				ErrorCode: domain.ErrEmptyParam,
+				Message:   "invalid params",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.title, func(t *testing.T) {
+			testAssert := assert.New(t)
+			resp := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(resp)
+
+			jsonRequest, err := convertToBytes(tc.request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			c.Request = httptest.NewRequest(http.MethodDelete, "/api/rooms", bytes.NewBuffer(jsonRequest))
+			c.Params = gin.Params{
+				{Key: "room_id", Value: tc.roomId},
+			}
+
+			roomController.DeleteChatRoom(c)
+
+			testAssert.Equal(tc.expectedCode, resp.Code)
+
+			var responseBody *domain.ApiResponse
+			if err := json.Unmarshal(resp.Body.Bytes(), &responseBody); err != nil {
+				t.Fatal(err)
+			}
+
+			testAssert.Equal(tc.expectedResp.ErrorCode, responseBody.ErrorCode)
+			testAssert.Equal(tc.expectedResp.Message, responseBody.Message)
+		})
+	}
+}
