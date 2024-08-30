@@ -11,6 +11,7 @@ type EnvConfig struct {
 	Slack  Slack
 	Redis  Redis
 	Policy Policy
+	Mysql  Mysql
 }
 
 type Server struct {
@@ -30,6 +31,10 @@ type Slack struct {
 
 type Redis struct {
 	Addr string `envconfig:"LCS_REDIS_ADDR" default:":6379"`
+}
+
+type Mysql struct {
+	Addr string `envconfig:"LCS_MYSQL_ADDR" default:":6379"`
 }
 
 type Policy struct {
