@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"live-chat-server/api/route"
 	"live-chat-server/config"
 	"net/http"
 	"sync"
@@ -21,6 +22,8 @@ func TestRunAndShutdown(t *testing.T) {
 	}
 
 	s := NewGinServer(cfg)
+	api := s.GetRouterGroup("/api")
+	route.SetupSystemGroup(api)
 
 	wg.Add(1)
 	go s.Run(wg)
