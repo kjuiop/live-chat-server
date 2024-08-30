@@ -6,7 +6,7 @@ import (
 	"live-chat-server/domain/chat"
 )
 
-func setupChatGroup(ws *gin.RouterGroup, cu chat.ChatUseCase) {
+func SetupChatGroup(ws *gin.RouterGroup, cu chat.ChatUseCase) {
 	chatController := controller.NewChatController(cu)
 	ws.GET("/chat/join/rooms/:room_id/user/:user_id", chatController.ServeWs)
 }

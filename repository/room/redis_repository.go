@@ -1,26 +1,28 @@
-package repository
+package room
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"live-chat-server/database"
+	"live-chat-server/database/redis"
 	"live-chat-server/domain/room"
 	"strconv"
 	"time"
 )
 
-type roomRepository struct {
-	db database.Client
+// 실제 쿼리가 작성되는 공간
+
+type roomRedisRepository struct {
+	db redis.Client
 }
 
-func NewRoomRepository(client database.Client) room.RoomRepository {
-	return &roomRepository{
+func NewRoomRedisRepository(client redis.Client) room.RoomRepository {
+	return &roomRedisRepository{
 		db: client,
 	}
 }
 
-func (r *roomRepository) Create(ctx context.Context, room room.RoomInfo) error {
+func (r *roomRedisRepository) Create(ctx context.Context, room room.RoomInfo) error {
 
 	if err := r.db.HSet(ctx, room.GenerateRoomKey(), room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
@@ -34,7 +36,7 @@ func (r *roomRepository) Create(ctx context.Context, room room.RoomInfo) error {
 
 }
 
-func (r *roomRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, error) {
+func (r *roomRedisRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, error) {
 
 	result, err := r.db.HGetAll(ctx, key)
 	if err != nil {
@@ -66,7 +68,7 @@ func (r *roomRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, 
 	return roomInfo, nil
 }
 
-func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
+func (r *roomRedisRepository) Exists(ctx context.Context, key string) (bool, error) {
 
 	isExist, err := r.db.Exists(ctx, key)
 	if err != nil {
@@ -76,7 +78,7 @@ func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
 	return isExist, nil
 }
 
-func (r *roomRepository) Update(ctx context.Context, key string, room room.RoomInfo) error {
+func (r *roomRedisRepository) Update(ctx context.Context, key string, room room.RoomInfo) error {
 
 	if err := r.db.HSet(ctx, key, room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
@@ -89,7 +91,7 @@ func (r *roomRepository) Update(ctx context.Context, key string, room room.RoomI
 	return nil
 }
 
-func (r *roomRepository) Delete(ctx context.Context, key string) error {
+func (r *roomRedisRepository) Delete(ctx context.Context, key string) error {
 
 	if err := r.db.DelByKey(ctx, key); err != nil {
 		return err
@@ -98,7 +100,7 @@ func (r *roomRepository) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data room.RoomInfo) error {
+func (r *roomRedisRepository) SetRoomMap(ctx context.Context, key string, data room.RoomInfo) error {
 
 	jData, err := json.Marshal(data.ConvertRedisData())
 	if err != nil {
@@ -114,7 +116,7 @@ func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data room.R
 	return nil
 }
 
-func (r *roomRepository) GetRoomMap(ctx context.Context, key, mapKey string) (room.RoomInfo, error) {
+func (r *roomRedisRepository) GetRoomMap(ctx context.Context, key, mapKey string) (room.RoomInfo, error) {
 
 	result, err := r.db.HGet(ctx, key, mapKey)
 	if err != nil {

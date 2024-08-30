@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"live-chat-server/config"
-	redis "live-chat-server/database"
 	"net/http"
 	"sync"
 	"testing"
@@ -21,9 +20,7 @@ func TestRunAndShutdown(t *testing.T) {
 		Port: "8090",
 	}
 
-	redisClient := redis.NewMemoryClient()
-
-	s := NewGinServer(cfg, redisClient)
+	s := NewGinServer(cfg)
 
 	wg.Add(1)
 	go s.Run(wg)

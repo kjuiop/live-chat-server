@@ -7,7 +7,7 @@ import (
 	"live-chat-server/domain/room"
 )
 
-func setupRoomGroup(api *gin.RouterGroup, cfg config.Policy, ur room.RoomUseCase) {
+func SetupRoomGroup(api *gin.RouterGroup, cfg config.Policy, ur room.RoomUseCase) {
 
 	roomController := controller.NewRoomController(cfg, ur)
 	api.POST("/rooms", roomController.CreateChatRoom)
