@@ -8,6 +8,7 @@ TARGET_VERSION=$(APP_VERSION).$(BUILD_NUM)
 TARGET_DIR=bin
 OUTPUT=$(PROJECT_PATH)/$(TARGET_DIR)/$(MODULE_NAME)
 
+# app 구성
 REDIS_SINGLE_MAIN=/cmd/redis_single/main.go
 
 LDFLAGS=-X main.BUILD_TIME=`date -u '+%Y-%m-%d_%H:%M:%S'`
@@ -15,7 +16,7 @@ LDFLAGS+=-X main.APP_VERSION=$(TARGET_VERSION)
 LDFLAGS+=-X main.GIT_HASH=`git rev-parse HEAD`
 LDFLAGS+=-s -w
 
-redis_single: config test redis_single-build
+redis-single: config test redis_single-build
 
 config:
 	@if [ ! -d $(TARGET_DIR) ]; then mkdir $(TARGET_DIR); fi

@@ -10,18 +10,18 @@ import (
 )
 
 type App struct {
-	cfg config.EnvConfig
+	cfg *config.EnvConfig
 	srv server.Client
 }
 
-func NewApplication(ctx context.Context, cfg config.EnvConfig) *App {
+func NewApplication(ctx context.Context, cfg *config.EnvConfig) *App {
 
 	redisClient, err := redis.NewRedisSingleClient(ctx, cfg.Redis)
 	if err != nil {
 		log.Fatalf("fail to connect redis client")
 	}
 
-	srv := server.NewGinServer(&cfg, redisClient)
+	srv := server.NewGinServer(cfg, redisClient)
 
 	return &App{
 		cfg: cfg,
