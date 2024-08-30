@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"live-chat-server/config"
-	redis "live-chat-server/internal/redis"
+	redis "live-chat-server/database"
 	"net/http"
 	"sync"
 	"testing"

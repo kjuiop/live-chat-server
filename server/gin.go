@@ -8,7 +8,7 @@ import (
 	"live-chat-server/api/middleware"
 	"live-chat-server/api/route"
 	"live-chat-server/config"
-	redis "live-chat-server/internal/redis"
+	"live-chat-server/database"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -20,7 +20,7 @@ type Gin struct {
 	cfg config.Server
 }
 
-func NewGinServer(cfg *config.EnvConfig, redis redis.Client) Client {
+func NewGinServer(cfg *config.EnvConfig, db database.Client) Client {
 
 	serverCfg := cfg.Server
 	router := getGinEngine(serverCfg.Mode)
@@ -33,7 +33,7 @@ func NewGinServer(cfg *config.EnvConfig, redis redis.Client) Client {
 
 	api := router.Group("/api")
 	ws := router.Group("/ws")
-	route.Setup(api, ws, cfg.Policy, timeout, redis)
+	route.Setup(api, ws, cfg.Policy, timeout, db)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", serverCfg.Port),

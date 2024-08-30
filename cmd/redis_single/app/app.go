@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 	"live-chat-server/config"
-	redis "live-chat-server/internal/redis"
-	"live-chat-server/internal/server"
+	"live-chat-server/database"
+	"live-chat-server/server"
 	"log"
 	"sync"
 )
@@ -12,20 +12,22 @@ import (
 type App struct {
 	cfg *config.EnvConfig
 	srv server.Client
+	db  database.Client
 }
 
 func NewApplication(ctx context.Context, cfg *config.EnvConfig) *App {
 
-	redisClient, err := redis.NewRedisSingleClient(ctx, cfg.Redis)
+	db, err := database.NewRedisSingleClient(ctx, cfg.Redis)
 	if err != nil {
 		log.Fatalf("fail to connect redis client")
 	}
 
-	srv := server.NewGinServer(cfg, redisClient)
+	srv := server.NewGinServer(cfg, db)
 
 	return &App{
 		cfg: cfg,
 		srv: srv,
+		db:  db,
 	}
 }
 
