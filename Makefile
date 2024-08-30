@@ -7,24 +7,26 @@ APP_VERSION=0.0
 TARGET_VERSION=$(APP_VERSION).$(BUILD_NUM)
 TARGET_DIR=bin
 OUTPUT=$(PROJECT_PATH)/$(TARGET_DIR)/$(MODULE_NAME)
-MAIN_FILE=/main.go
+
+# app 구성
+REDIS_SINGLE_MAIN=/cmd/redis_single/main.go
 
 LDFLAGS=-X main.BUILD_TIME=`date -u '+%Y-%m-%d_%H:%M:%S'`
 LDFLAGS+=-X main.APP_VERSION=$(TARGET_VERSION)
 LDFLAGS+=-X main.GIT_HASH=`git rev-parse HEAD`
 LDFLAGS+=-s -w
 
-all: config test build
+redis-single: config test redis_single-build
 
 config:
 	@if [ ! -d $(TARGET_DIR) ]; then mkdir $(TARGET_DIR); fi
 
-build:
-	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MAIN_FILE)
+redis_single-build:
+	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(REDIS_SINGLE_MAIN)
 	cp $(OUTPUT) ./$(MODULE_NAME)
 
 local-build:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MAIN_FILE)
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(REDIS_SINGLE_MAIN)
 	mv $(OUTPUT) ./$(MODULE_NAME)
 
 target-version:

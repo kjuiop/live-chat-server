@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
+	"live-chat-server/cmd/redis_single/app"
 	"live-chat-server/config"
-	redis "live-chat-server/internal/redis"
-	"live-chat-server/internal/server"
 	"live-chat-server/logger"
 	"live-chat-server/reporter"
 	"log"
@@ -41,18 +40,13 @@ func main() {
 
 	slog.Debug("live chat server app start", "git_hash", GIT_HASH, "build_time", BUILD_TIME, "app_version", APP_VERSION)
 
-	redisClient, err := redis.NewRedisSingleClient(ctx, cfg.Redis)
-	if err != nil {
-		log.Fatalf("fail to connect redis client")
-	}
-
-	srv := server.NewGinServer(cfg, redisClient)
+	a := app.NewApplication(ctx, cfg)
 
 	wg.Add(1)
-	go srv.Run(&wg)
+	go a.Start(&wg)
 
 	<-exitSignal()
-	srv.Shutdown(ctx)
+	a.Stop(ctx)
 	cancel()
 	wg.Wait()
 	slog.Debug("live chat server app gracefully stopped")
