@@ -56,8 +56,8 @@ func (g *Gin) Shutdown(ctx context.Context) {
 	}
 }
 
-func (g *Gin) GetRouterGroup(name string) *gin.RouterGroup {
-	return g.router.Group(name)
+func (g *Gin) GetEngine() *gin.Engine {
+	return g.router
 }
 
 func getGinEngine(mode string) *gin.Engine {

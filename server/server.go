@@ -9,5 +9,5 @@ import (
 type Client interface {
 	Run(wg *sync.WaitGroup)
 	Shutdown(ctx context.Context)
-	GetRouterGroup(name string) *gin.RouterGroup
+	GetEngine() *gin.Engine
 }

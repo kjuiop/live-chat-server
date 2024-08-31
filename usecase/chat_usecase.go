@@ -28,9 +28,9 @@ type chatUseCase struct {
 	hub            map[string]*chat.Room
 }
 
-func NewChatUseCase(roomRepository room.RoomUseCase, timeout time.Duration) chat.ChatUseCase {
+func NewChatUseCase(roomUseCase room.RoomUseCase, timeout time.Duration) chat.ChatUseCase {
 	return &chatUseCase{
-		roomUseCase:    roomRepository,
+		roomUseCase:    roomUseCase,
 		contextTimeout: timeout,
 		hub:            make(map[string]*chat.Room),
 	}

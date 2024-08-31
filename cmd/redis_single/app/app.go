@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"live-chat-server/api/controller"
 	"live-chat-server/api/route"
 	"live-chat-server/config"
 	"live-chat-server/database/redis"
@@ -51,15 +52,23 @@ func (a *App) setupRouter() {
 
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
 
-	api := a.srv.GetRouterGroup("/api")
-	ws := a.srv.GetRouterGroup("/ws")
+	// repository
+	roomRepository := room.NewRoomRedisRepository(a.db)
 
-	route.SetupSystemGroup(api)
+	// use_case
+	roomUseCase := usecase.NewRoomUseCase(roomRepository, timeout)
+	chatUseCase := usecase.NewChatUseCase(roomUseCase, timeout)
 
-	rr := room.NewRoomRedisRepository(a.db)
-	ur := usecase.NewRoomUseCase(rr, timeout)
-	route.SetupRoomGroup(api, a.cfg.Policy, ur)
+	// controller
+	systemController := controller.NewSystemController()
+	roomController := controller.NewRoomController(a.cfg.Policy, roomUseCase)
+	chatController := controller.NewChatController(chatUseCase)
 
-	cu := usecase.NewChatUseCase(ur, timeout)
-	route.SetupChatGroup(ws, cu)
+	router := route.RouterConfig{
+		Engine:           a.srv.GetEngine(),
+		SystemController: systemController,
+		RoomController:   roomController,
+		ChatController:   chatController,
+	}
+	router.Setup()
 }
