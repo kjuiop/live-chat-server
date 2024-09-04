@@ -5,11 +5,11 @@ import (
 	"live-chat-server/api/controller"
 	"live-chat-server/api/route"
 	"live-chat-server/config"
-	redis2 "live-chat-server/internal/database/redis"
-	"live-chat-server/internal/domain/chat/usecase"
+	"live-chat-server/internal/database/redis"
+	cu "live-chat-server/internal/domain/chat/usecase"
 	"live-chat-server/internal/domain/room/repository"
-	usecase2 "live-chat-server/internal/domain/room/usecase"
-	server2 "live-chat-server/internal/server"
+	ru "live-chat-server/internal/domain/room/usecase"
+	"live-chat-server/internal/server"
 	"log"
 	"sync"
 	"time"
@@ -17,18 +17,18 @@ import (
 
 type App struct {
 	cfg *config.EnvConfig
-	srv server2.Client
-	db  redis2.Client
+	srv server.Client
+	db  redis.Client
 }
 
 func NewApplication(ctx context.Context, cfg *config.EnvConfig) *App {
 
-	db, err := redis2.NewRedisSingleClient(ctx, cfg.Redis)
+	db, err := redis.NewRedisSingleClient(ctx, cfg.Redis)
 	if err != nil {
 		log.Fatalf("fail to connect redis client")
 	}
 
-	srv := server2.NewGinServer(cfg)
+	srv := server.NewGinServer(cfg)
 
 	app := &App{
 		cfg: cfg,
@@ -57,8 +57,8 @@ func (a *App) setupRouter() {
 	roomRepository := repository.NewRoomRedisRepository(a.db)
 
 	// use_case
-	roomUseCase := usecase2.NewRoomUseCase(roomRepository, timeout)
-	chatUseCase := usecase.NewChatUseCase(roomUseCase, timeout)
+	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)
+	chatUseCase := cu.NewChatUseCase(roomUseCase, timeout)
 
 	// controller
 	systemController := controller.NewSystemController()
