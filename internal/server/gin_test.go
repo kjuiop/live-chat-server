@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"live-chat-server/api/controller"
+	"live-chat-server/api/route"
 	"live-chat-server/config"
-	redis "live-chat-server/internal/redis"
 	"net/http"
 	"sync"
 	"testing"
@@ -21,9 +22,12 @@ func TestRunAndShutdown(t *testing.T) {
 		Port: "8090",
 	}
 
-	redisClient := redis.NewMemoryClient()
-
-	s := NewGinServer(cfg, redisClient)
+	s := NewGinServer(cfg)
+	router := route.RouterConfig{
+		Engine:           s.GetEngine(),
+		SystemController: controller.NewSystemController(),
+	}
+	router.SetupSystemRouter(router.Engine.Group("/api"))
 
 	wg.Add(1)
 	go s.Run(wg)

@@ -7,24 +7,38 @@ APP_VERSION=0.0
 TARGET_VERSION=$(APP_VERSION).$(BUILD_NUM)
 TARGET_DIR=bin
 OUTPUT=$(PROJECT_PATH)/$(TARGET_DIR)/$(MODULE_NAME)
-MAIN_FILE=/main.go
+
+# app 구성
+REDIS_SINGLE_MAIN=/cmd/redis_single/main.go
+MYSQL_KAFKA_CONTROLLER=/cmd/mysql_kafka/controller/main.go
+MYSQL_KAFKA_WORKER=/cmd/mysql_kafka/worker/main.go
 
 LDFLAGS=-X main.BUILD_TIME=`date -u '+%Y-%m-%d_%H:%M:%S'`
 LDFLAGS+=-X main.APP_VERSION=$(TARGET_VERSION)
 LDFLAGS+=-X main.GIT_HASH=`git rev-parse HEAD`
 LDFLAGS+=-s -w
 
-all: config test build
+redis-single: config test redis_single-build
+mk_controller: config test mk_controller-build
+mk_worker: config test mk_worker-build
 
 config:
 	@if [ ! -d $(TARGET_DIR) ]; then mkdir $(TARGET_DIR); fi
 
-build:
-	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MAIN_FILE)
+redis_single-build:
+	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(REDIS_SINGLE_MAIN)
+	cp $(OUTPUT) ./$(MODULE_NAME)
+
+mk_controller-build:
+	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_CONTROLLER)
+	cp $(OUTPUT) ./$(MODULE_NAME)
+
+mk_worker-build:
+	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_WORKER)
 	cp $(OUTPUT) ./$(MODULE_NAME)
 
 local-build:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MAIN_FILE)
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(REDIS_SINGLE_MAIN)
 	mv $(OUTPUT) ./$(MODULE_NAME)
 
 target-version:

@@ -11,6 +11,7 @@ type EnvConfig struct {
 	Slack  Slack
 	Redis  Redis
 	Policy Policy
+	Mysql  Mysql
 }
 
 type Server struct {
@@ -32,6 +33,11 @@ type Redis struct {
 	Addr string `envconfig:"LCS_REDIS_ADDR" default:":6379"`
 }
 
+type Mysql struct {
+	URL      string `envconfig:"LCS_MYSQL_URL" default:":6379"`
+	Database string `envconfig:"LCS_MYSQL_DATABASE" default:"chat"`
+}
+
 type Policy struct {
 	Prefix         string `envconfig:"LCS_ROOM_PREFIX" default:"N1,N2"`
 	ContextTimeout int    `envconfig:"LCS_CONTEXT_TIMEOUT" default:"60"`
@@ -39,7 +45,7 @@ type Policy struct {
 
 func LoadEnvConfig() (*EnvConfig, error) {
 	var config EnvConfig
-	if err := envconfig.Process("fua", &config); err != nil {
+	if err := envconfig.Process("lcs", &config); err != nil {
 		return nil, err
 	}
 	return &config, nil

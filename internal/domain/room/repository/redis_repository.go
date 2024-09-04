@@ -4,29 +4,31 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"live-chat-server/domain/room"
-	redis "live-chat-server/internal/redis"
+	"live-chat-server/internal/database/redis"
+	"live-chat-server/internal/domain/room"
 	"strconv"
 	"time"
 )
 
-type roomRepository struct {
-	rdb redis.Client
+// 실제 쿼리가 작성되는 공간
+
+type roomRedisRepository struct {
+	db redis.Client
 }
 
-func NewRoomRepository(client redis.Client) room.RoomRepository {
-	return &roomRepository{
-		rdb: client,
+func NewRoomRedisRepository(client redis.Client) room.RoomRepository {
+	return &roomRedisRepository{
+		db: client,
 	}
 }
 
-func (r *roomRepository) Create(ctx context.Context, room room.RoomInfo) error {
+func (r *roomRedisRepository) Create(ctx context.Context, room room.RoomInfo) error {
 
-	if err := r.rdb.HSet(ctx, room.GenerateRoomKey(), room.ConvertRedisData()); err != nil {
+	if err := r.db.HSet(ctx, room.GenerateRoomKey(), room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
-	if err := r.rdb.Expire(ctx, room.RoomId, time.Duration(room.RoomIdTTLDay*24)*time.Hour); err != nil {
+	if err := r.db.Expire(ctx, room.RoomId, time.Duration(room.RoomIdTTLDay*24)*time.Hour); err != nil {
 		return fmt.Errorf("create chat room key fail set ttl, key : %s, err : %w", room.RoomId, err)
 	}
 
@@ -34,9 +36,9 @@ func (r *roomRepository) Create(ctx context.Context, room room.RoomInfo) error {
 
 }
 
-func (r *roomRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, error) {
+func (r *roomRedisRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, error) {
 
-	result, err := r.rdb.HGetAll(ctx, key)
+	result, err := r.db.HGetAll(ctx, key)
 	if err != nil {
 		return room.RoomInfo{}, fmt.Errorf("fail get room info, err : %w", err)
 	}
@@ -66,9 +68,9 @@ func (r *roomRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, 
 	return roomInfo, nil
 }
 
-func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
+func (r *roomRedisRepository) Exists(ctx context.Context, key string) (bool, error) {
 
-	isExist, err := r.rdb.Exists(ctx, key)
+	isExist, err := r.db.Exists(ctx, key)
 	if err != nil {
 		return false, fmt.Errorf("fail redis cmd exist err : %w", err)
 	}
@@ -76,36 +78,36 @@ func (r *roomRepository) Exists(ctx context.Context, key string) (bool, error) {
 	return isExist, nil
 }
 
-func (r *roomRepository) Update(ctx context.Context, key string, room room.RoomInfo) error {
+func (r *roomRedisRepository) Update(ctx context.Context, key string, room room.RoomInfo) error {
 
-	if err := r.rdb.HSet(ctx, key, room.ConvertRedisData()); err != nil {
+	if err := r.db.HSet(ctx, key, room.ConvertRedisData()); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 
-	if err := r.rdb.Expire(ctx, key, time.Duration(room.RoomIdTTLDay*24)*time.Hour); err != nil {
+	if err := r.db.Expire(ctx, key, time.Duration(room.RoomIdTTLDay*24)*time.Hour); err != nil {
 		return fmt.Errorf("create chat room key fail set ttl, key : %s, err : %w", room.RoomId, err)
 	}
 
 	return nil
 }
 
-func (r *roomRepository) Delete(ctx context.Context, key string) error {
+func (r *roomRedisRepository) Delete(ctx context.Context, key string) error {
 
-	if err := r.rdb.DelByKey(ctx, key); err != nil {
+	if err := r.db.DelByKey(ctx, key); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data room.RoomInfo) error {
+func (r *roomRedisRepository) SetRoomMap(ctx context.Context, key string, data room.RoomInfo) error {
 
 	jData, err := json.Marshal(data.ConvertRedisData())
 	if err != nil {
 		return fmt.Errorf("set room map json encoding fail, err : %w", err)
 	}
 
-	if err := r.rdb.HSet(ctx, key, map[string]interface{}{
+	if err := r.db.HSet(ctx, key, map[string]interface{}{
 		data.GenerateRoomMapFieldKey(): string(jData),
 	}); err != nil {
 		return err
@@ -114,9 +116,9 @@ func (r *roomRepository) SetRoomMap(ctx context.Context, key string, data room.R
 	return nil
 }
 
-func (r *roomRepository) GetRoomMap(ctx context.Context, key, mapKey string) (room.RoomInfo, error) {
+func (r *roomRedisRepository) GetRoomMap(ctx context.Context, key, mapKey string) (room.RoomInfo, error) {
 
-	result, err := r.rdb.HGet(ctx, key, mapKey)
+	result, err := r.db.HGet(ctx, key, mapKey)
 	if err != nil {
 		return room.RoomInfo{}, err
 	}

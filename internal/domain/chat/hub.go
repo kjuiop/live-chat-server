@@ -1,7 +1,7 @@
 package chat
 
 import (
-	"live-chat-server/domain/room"
+	"live-chat-server/internal/domain/room"
 	"log/slog"
 )
 

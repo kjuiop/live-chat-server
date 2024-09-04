@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"live-chat-server/domain"
+	"live-chat-server/internal/domain"
 	"net/http"
 	"net/http/httptest"
 	"testing"

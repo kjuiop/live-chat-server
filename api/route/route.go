@@ -2,22 +2,45 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
-	"live-chat-server/config"
-	redis "live-chat-server/internal/redis"
-	"live-chat-server/repository"
-	"live-chat-server/usecase"
-	"time"
+	"live-chat-server/api/controller"
 )
 
-func Setup(api, ws *gin.RouterGroup, cfg config.Policy, timeout time.Duration, redis redis.Client) {
+type RouterConfig struct {
+	Engine           *gin.Engine
+	SystemController *controller.SystemController
+	RoomController   *controller.RoomController
+	ChatController   *controller.ChatController
+}
 
-	SetupSystemGroup(api)
+func (r *RouterConfig) ApiSetup() {
+	api := r.Engine.Group("/api")
+	r.SetupRoomRouter(api)
+	r.SetupSystemRouter(api)
+}
 
-	rr := repository.NewRoomRepository(redis)
-	ur := usecase.NewRoomUseCase(rr, timeout)
+func (r *RouterConfig) WsSetup() {
+	ws := r.Engine.Group("/ws")
+	r.SetupWsGroup(ws)
+}
 
-	setupRoomGroup(api, cfg, ur)
+func (r *RouterConfig) Setup() {
+	r.ApiSetup()
+	r.WsSetup()
+}
 
-	cu := usecase.NewChatUseCase(ur, timeout)
-	setupChatGroup(ws, cu)
+func (r *RouterConfig) SetupRoomRouter(api *gin.RouterGroup) {
+	api.POST("/rooms", r.RoomController.CreateChatRoom)
+	api.GET("/rooms/:room_id", r.RoomController.GetChatRoom)
+	api.PUT("/rooms/:room_id", r.RoomController.UpdateChatRoom)
+	api.DELETE("/rooms/:room_id", r.RoomController.DeleteChatRoom)
+	api.GET("/rooms/id", r.RoomController.GetChatRoomId)
+}
+
+func (r *RouterConfig) SetupSystemRouter(api *gin.RouterGroup) {
+	api.GET("/health-check", r.SystemController.GetHealth)
+	api.GET("/panic-test", r.SystemController.OccurPanic)
+}
+
+func (r *RouterConfig) SetupWsGroup(ws *gin.RouterGroup) {
+	ws.GET("/chat/join/rooms/:room_id/user/:user_id", r.ChatController.ServeWs)
 }

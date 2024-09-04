@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"live-chat-server/domain"
+	"live-chat-server/internal/domain"
 	"net/http"
 )
 

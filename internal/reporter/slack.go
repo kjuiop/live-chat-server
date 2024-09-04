@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"live-chat-server/config"
-	"live-chat-server/domain"
+	"live-chat-server/internal/domain"
 	"log/slog"
 	"net/http"
 )

@@ -1,0 +1,39 @@
+version: '3'
+services:
+  zookeeper:
+    image: zookeeper:3.7.0
+    container_name: chat-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: chat-kafka
+    ports:
+      - "9292:9292"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9292
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9292
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  mysql:
+    image: mysql:latest
+    container_name: chat-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: chat
+      MYSQL_USER: gig
+      MYSQL_PASSWORD: 1234
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
