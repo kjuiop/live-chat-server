@@ -34,7 +34,8 @@ type Redis struct {
 }
 
 type Mysql struct {
-	Addr string `envconfig:"LCS_MYSQL_ADDR" default:":6379"`
+	URL      string `envconfig:"LCS_MYSQL_URL" default:":6379"`
+	Database string `envconfig:"LCS_MYSQL_DATABASE" default:"chat"`
 }
 
 type Policy struct {
@@ -44,7 +45,7 @@ type Policy struct {
 
 func LoadEnvConfig() (*EnvConfig, error) {
 	var config EnvConfig
-	if err := envconfig.Process("fua", &config); err != nil {
+	if err := envconfig.Process("lcs", &config); err != nil {
 		return nil, err
 	}
 	return &config, nil

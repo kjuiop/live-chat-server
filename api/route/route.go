@@ -12,11 +12,13 @@ type RouterConfig struct {
 	ChatController   *controller.ChatController
 }
 
-func (r *RouterConfig) Setup() {
+func (r *RouterConfig) ApiSetup() {
 	api := r.Engine.Group("/api")
 	r.SetupRoomRouter(api)
 	r.SetupSystemRouter(api)
+}
 
+func (r *RouterConfig) WsSetup() {
 	ws := r.Engine.Group("/ws")
 	r.SetupWsGroup(ws)
 }

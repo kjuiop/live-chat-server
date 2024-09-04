@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"live-chat-server/cmd/mysql_kafka/app"
+	"live-chat-server/cmd/mysql_kafka/controller/app"
 	"live-chat-server/config"
 	"live-chat-server/logger"
 	"live-chat-server/reporter"

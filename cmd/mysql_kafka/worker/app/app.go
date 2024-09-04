@@ -58,17 +58,12 @@ func (a *App) setupRouter() {
 	// use_case
 	roomUseCase := usecase.NewRoomUseCase(roomRepository, timeout)
 	chatUseCase := usecase.NewChatUseCase(roomUseCase, timeout)
-
-	// controller
-	systemController := controller.NewSystemController()
-	roomController := controller.NewRoomController(a.cfg.Policy, roomUseCase)
+	
 	chatController := controller.NewChatController(chatUseCase)
 
 	router := route.RouterConfig{
-		Engine:           a.srv.GetEngine(),
-		SystemController: systemController,
-		RoomController:   roomController,
-		ChatController:   chatController,
+		Engine:         a.srv.GetEngine(),
+		ChatController: chatController,
 	}
-	router.Setup()
+	router.WsSetup()
 }
