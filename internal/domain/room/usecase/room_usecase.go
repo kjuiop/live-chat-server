@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"live-chat-server/domain/room"
+	"live-chat-server/internal/domain/room"
 	"time"
 )
 

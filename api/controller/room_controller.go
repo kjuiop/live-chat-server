@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"live-chat-server/config"
-	"live-chat-server/domain"
-	"live-chat-server/domain/room"
+	"live-chat-server/internal/domain"
+	"live-chat-server/internal/domain/room"
 	"net/http"
 )
 

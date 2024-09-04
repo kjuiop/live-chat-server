@@ -1,9 +1,9 @@
-package room
+package repository
 
 import (
 	"context"
-	"live-chat-server/database/mysql"
-	"live-chat-server/domain/room"
+	"live-chat-server/internal/database/mysql"
+	"live-chat-server/internal/domain/room"
 )
 
 type roomMysqlRepository struct {

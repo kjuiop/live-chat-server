@@ -3,7 +3,7 @@ package room
 import (
 	"context"
 	"fmt"
-	"live-chat-server/utils"
+	"live-chat-server/internal/utils"
 	"math/rand"
 	"strings"
 	"time"

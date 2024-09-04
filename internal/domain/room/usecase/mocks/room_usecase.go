@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"live-chat-server/domain/room"
+	"live-chat-server/internal/domain/room"
 	"sync"
 )
 

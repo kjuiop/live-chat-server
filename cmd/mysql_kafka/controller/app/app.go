@@ -5,10 +5,10 @@ import (
 	"live-chat-server/api/controller"
 	"live-chat-server/api/route"
 	"live-chat-server/config"
-	"live-chat-server/database/mysql"
-	"live-chat-server/repository/room"
-	"live-chat-server/server"
-	"live-chat-server/usecase"
+	mysql2 "live-chat-server/internal/database/mysql"
+	"live-chat-server/internal/domain/room/repository"
+	"live-chat-server/internal/domain/room/usecase"
+	server2 "live-chat-server/internal/server"
 	"log"
 	"sync"
 	"time"
@@ -16,18 +16,18 @@ import (
 
 type App struct {
 	cfg *config.EnvConfig
-	srv server.Client
-	db  mysql.Client
+	srv server2.Client
+	db  mysql2.Client
 }
 
 func NewApplication(ctx context.Context, cfg *config.EnvConfig) *App {
 
-	db, err := mysql.NewMysqlSingleClient(ctx, cfg.Mysql)
+	db, err := mysql2.NewMysqlSingleClient(ctx, cfg.Mysql)
 	if err != nil {
 		log.Fatalf("fail to connect redis client")
 	}
 
-	srv := server.NewGinServer(cfg)
+	srv := server2.NewGinServer(cfg)
 
 	app := &App{
 		cfg: cfg,
@@ -53,7 +53,7 @@ func (a *App) setupRouter() {
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
 
 	// repository
-	roomRepository := room.NewRoomMysqlRepository(a.db)
+	roomRepository := repository.NewRoomMysqlRepository(a.db)
 
 	// use_case
 	roomUseCase := usecase.NewRoomUseCase(roomRepository, timeout)

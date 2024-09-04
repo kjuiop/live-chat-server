@@ -1,11 +1,11 @@
-package room
+package repository
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"live-chat-server/database/redis"
-	"live-chat-server/domain/room"
+	"live-chat-server/internal/database/redis"
+	"live-chat-server/internal/domain/room"
 	"strconv"
 	"time"
 )

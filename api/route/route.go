@@ -23,6 +23,11 @@ func (r *RouterConfig) WsSetup() {
 	r.SetupWsGroup(ws)
 }
 
+func (r *RouterConfig) Setup() {
+	r.ApiSetup()
+	r.WsSetup()
+}
+
 func (r *RouterConfig) SetupRoomRouter(api *gin.RouterGroup) {
 	api.POST("/rooms", r.RoomController.CreateChatRoom)
 	api.GET("/rooms/:room_id", r.RoomController.GetChatRoom)

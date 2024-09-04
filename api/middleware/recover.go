@@ -3,7 +3,7 @@ package middleware
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"live-chat-server/reporter"
+	"live-chat-server/internal/reporter"
 	"log/slog"
 	"net/http"
 )

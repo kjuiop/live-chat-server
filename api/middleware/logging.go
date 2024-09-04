@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"live-chat-server/reporter"
+	"live-chat-server/internal/reporter"
 	"log/slog"
 	"time"
 )
