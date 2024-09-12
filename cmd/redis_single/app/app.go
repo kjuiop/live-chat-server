@@ -7,8 +7,10 @@ import (
 	"live-chat-server/config"
 	"live-chat-server/internal/database/redis"
 	cu "live-chat-server/internal/domain/chat/usecase"
-	"live-chat-server/internal/domain/room/repository"
+	rr "live-chat-server/internal/domain/room/repository"
 	ru "live-chat-server/internal/domain/room/usecase"
+	sr "live-chat-server/internal/domain/system/repository"
+	su "live-chat-server/internal/domain/system/usecase"
 	"live-chat-server/internal/logger"
 	"live-chat-server/internal/reporter"
 	"live-chat-server/internal/server"
@@ -67,14 +69,15 @@ func (a *App) setupRouter() {
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
 
 	// repository
-	roomRepository := repository.NewRoomRedisRepository(a.db)
-
+	roomRepository := rr.NewRoomRedisRepository(a.db)
+	systemRepository := sr.NewSystemRedisRepository(a.cfg.Redis)
 	// use_case
 	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)
 	chatUseCase := cu.NewChatUseCase(roomUseCase, timeout)
+	systemUseCase := su.NewSystemUseCase(systemRepository)
 
 	// controller
-	systemController := controller.NewSystemController()
+	systemController := controller.NewSystemController(systemUseCase)
 	roomController := controller.NewRoomController(a.cfg.Policy, roomUseCase)
 	chatController := controller.NewChatController(chatUseCase)
 

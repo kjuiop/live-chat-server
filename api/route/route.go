@@ -39,6 +39,7 @@ func (r *RouterConfig) SetupRoomRouter(api *gin.RouterGroup) {
 func (r *RouterConfig) SetupSystemRouter(api *gin.RouterGroup) {
 	api.GET("/health-check", r.SystemController.GetHealth)
 	api.GET("/panic-test", r.SystemController.OccurPanic)
+	api.GET("/server-list", r.SystemController.GetServerList)
 }
 
 func (r *RouterConfig) SetupWsGroup(ws *gin.RouterGroup) {

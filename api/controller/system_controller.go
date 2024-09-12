@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"live-chat-server/internal/domain"
+	"live-chat-server/internal/domain/system"
 	"net/http"
 )
 
 type SystemController struct {
+	SystemUseCase system.UseCase
 }
 
-func NewSystemController() *SystemController {
-	return &SystemController{}
+func NewSystemController(useCase system.UseCase) *SystemController {
+	return &SystemController{
+		SystemUseCase: useCase,
+	}
 }
 
 func (s *SystemController) successResponse(c *gin.Context, statusCode int, data interface{}) {
@@ -23,6 +27,11 @@ func (s *SystemController) successResponse(c *gin.Context, statusCode int, data 
 }
 
 func (s *SystemController) GetHealth(c *gin.Context) {
+	s.successResponse(c, http.StatusOK, nil)
+	return
+}
+
+func (s *SystemController) GetServerList(c *gin.Context) {
 	s.successResponse(c, http.StatusOK, nil)
 	return
 }

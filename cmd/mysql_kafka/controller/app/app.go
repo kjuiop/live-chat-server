@@ -6,8 +6,10 @@ import (
 	"live-chat-server/api/route"
 	"live-chat-server/config"
 	"live-chat-server/internal/database/mysql"
-	"live-chat-server/internal/domain/room/repository"
-	"live-chat-server/internal/domain/room/usecase"
+	rr "live-chat-server/internal/domain/room/repository"
+	ru "live-chat-server/internal/domain/room/usecase"
+	sr "live-chat-server/internal/domain/system/repository"
+	su "live-chat-server/internal/domain/system/usecase"
 	"live-chat-server/internal/logger"
 	"live-chat-server/internal/reporter"
 	"live-chat-server/internal/server"
@@ -48,7 +50,9 @@ func NewApplication(ctx context.Context) *App {
 		db:  db,
 	}
 
-	app.setupRouter()
+	if err := app.setupRouter(); err != nil {
+		log.Fatalf("failed initialize router, err : %v", err)
+	}
 
 	return app
 }
@@ -61,19 +65,21 @@ func (a *App) Stop(ctx context.Context) {
 	a.srv.Shutdown(ctx)
 }
 
-func (a *App) setupRouter() {
+func (a *App) setupRouter() error {
 
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
 
 	// repository
-	roomRepository := repository.NewRoomMysqlRepository(a.db)
+	roomRepository := rr.NewRoomMysqlRepository(a.db)
+	systemRepository := sr.NewSystemMySqlRepository(a.cfg.Mysql)
 
 	// use_case
-	roomUseCase := usecase.NewRoomUseCase(roomRepository, timeout)
+	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)
+	systemUseCase := su.NewSystemUseCase(systemRepository)
 
 	// controller
-	systemController := controller.NewSystemController()
 	roomController := controller.NewRoomController(a.cfg.Policy, roomUseCase)
+	systemController := controller.NewSystemController(systemUseCase)
 
 	router := route.RouterConfig{
 		Engine:           a.srv.GetEngine(),
@@ -81,4 +87,5 @@ func (a *App) setupRouter() {
 		RoomController:   roomController,
 	}
 	router.ApiSetup()
+	return nil
 }
