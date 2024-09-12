@@ -48,6 +48,11 @@ func LoadEnvConfig() (*EnvConfig, error) {
 	if err := envconfig.Process("lcs", &config); err != nil {
 		return nil, err
 	}
+
+	if err := config.CheckValid(); err != nil {
+		return nil, err
+	}
+
 	return &config, nil
 }
 

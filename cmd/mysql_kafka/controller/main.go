@@ -3,10 +3,6 @@ package main
 import (
 	"context"
 	"live-chat-server/cmd/mysql_kafka/controller/app"
-	"live-chat-server/config"
-	"live-chat-server/internal/logger"
-	"live-chat-server/internal/reporter"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -23,27 +19,12 @@ func main() {
 	wg := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
 
-	cfg, err := config.LoadEnvConfig()
-	if err != nil {
-		log.Fatalf("fail to read config err : %v", err)
-	}
-
-	if err := cfg.CheckValid(); err != nil {
-		log.Fatalf("fail to invalid config, err : %v", err)
-	}
-
-	reporter.NewSlackReporter(cfg.Slack)
-
-	if err := logger.SlogInit(cfg.Logger); err != nil {
-		log.Fatalf("fail to init slog err : %v", err)
-	}
-
-	slog.Debug("live chat server app start", "git_hash", GIT_HASH, "build_time", BUILD_TIME, "app_version", APP_VERSION)
-
-	a := app.NewApplication(ctx, cfg)
+	a := app.NewApplication(ctx)
 
 	wg.Add(1)
 	go a.Start(&wg)
+
+	slog.Debug("live chat server app start", "git_hash", GIT_HASH, "build_time", BUILD_TIME, "app_version", APP_VERSION)
 
 	<-exitSignal()
 	a.Stop(ctx)
