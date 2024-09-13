@@ -71,7 +71,7 @@ func (a *App) setupRouter() error {
 
 	// repository
 	roomRepository := rr.NewRoomMysqlRepository(a.db)
-	systemRepository := sr.NewSystemMySqlRepository(a.cfg.Mysql)
+	systemRepository := sr.NewSystemMySqlRepository(a.db)
 
 	// use_case
 	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)

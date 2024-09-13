@@ -26,13 +26,34 @@ func (s *SystemController) successResponse(c *gin.Context, statusCode int, data 
 	})
 }
 
+func (s *SystemController) failResponse(c *gin.Context, statusCode, errorCode int, err error) {
+
+	logMessage := domain.GetCustomErrMessage(errorCode, err.Error())
+	c.Errors = append(c.Errors, &gin.Error{
+		Err:  fmt.Errorf(logMessage),
+		Type: gin.ErrorTypePrivate,
+	})
+
+	c.JSON(statusCode, domain.ApiResponse{
+		ErrorCode: errorCode,
+		Message:   domain.GetCustomMessage(errorCode),
+	})
+}
+
 func (s *SystemController) GetHealth(c *gin.Context) {
 	s.successResponse(c, http.StatusOK, nil)
 	return
 }
 
 func (s *SystemController) GetServerList(c *gin.Context) {
-	s.successResponse(c, http.StatusOK, nil)
+
+	list, err := s.SystemUseCase.GetServerList()
+	if err != nil {
+		s.failResponse(c, http.StatusInternalServerError, domain.ErrInternalServerError, fmt.Errorf("get server list occur err : %w", err))
+		return
+	}
+
+	s.successResponse(c, http.StatusOK, list)
 	return
 }
 
