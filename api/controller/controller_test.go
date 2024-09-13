@@ -7,7 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"live-chat-server/config"
 	"live-chat-server/internal/domain/room"
-	"live-chat-server/internal/domain/room/usecase/mocks"
+	rm "live-chat-server/internal/domain/room/usecase/mocks"
+	sm "live-chat-server/internal/domain/system/usecase/mocks"
 	"log"
 	"os"
 	"testing"
@@ -23,7 +24,8 @@ var initRooms embed.FS
 
 func TestMain(m *testing.M) {
 
-	systemController = NewSystemController()
+	su := sm.NewSystemUseCaseStub()
+	systemController = NewSystemController(su)
 
 	cfg, err := config.LoadEnvConfig()
 	if err != nil {
@@ -40,7 +42,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to unmarshal JSON: %v", err)
 	}
 
-	us := mocks.NewRoomUseCaseStub(roomInfo)
+	us := rm.NewRoomUseCaseStub(roomInfo)
 	roomController = NewRoomController(cfg.Policy, us)
 
 	gin.SetMode(gin.TestMode)
