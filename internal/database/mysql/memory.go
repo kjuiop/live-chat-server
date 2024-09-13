@@ -13,3 +13,8 @@ func (m memoryClient) GetServerList(qs string) ([]system.ServerInfo, error) {
 	//TODO implement me
 	panic("implement me")
 }
+
+func (m memoryClient) Close() {
+	//TODO implement me
+	panic("implement me")
+}

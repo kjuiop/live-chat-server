@@ -63,6 +63,7 @@ func (a *App) Start(wg *sync.WaitGroup) {
 
 func (a *App) Stop(ctx context.Context) {
 	a.srv.Shutdown(ctx)
+	a.db.Close()
 }
 
 func (a *App) setupRouter() error {

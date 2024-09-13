@@ -34,8 +34,11 @@ type Redis struct {
 }
 
 type Mysql struct {
-	URL      string `envconfig:"LCS_MYSQL_URL" default:":6379"`
-	Database string `envconfig:"LCS_MYSQL_DATABASE" default:"chat"`
+	Host     string `envconfig:"LCS_MYSQL_HOST" default:"localhost:3306"`
+	Driver   string `envconfig:"LCS_MYSQL_DATABASE" default:"mysql"`
+	User     string `envconfig:"LCS_MYSQL_USER" default:"root"`
+	Password string `envconfig:"LCS_MYSQL_PASSWORD" default:"1234"`
+	Database string `envconfig:"LCS_MYSQL_DATABASE" default:"chatting"`
 }
 
 type Policy struct {
