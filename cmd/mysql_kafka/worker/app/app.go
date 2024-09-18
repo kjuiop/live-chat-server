@@ -9,6 +9,8 @@ import (
 	cu "live-chat-server/internal/domain/chat/usecase"
 	"live-chat-server/internal/domain/room/repository"
 	ru "live-chat-server/internal/domain/room/usecase"
+	"live-chat-server/internal/logger"
+	"live-chat-server/internal/reporter"
 	"live-chat-server/internal/server"
 	"log"
 	"sync"
@@ -21,7 +23,18 @@ type App struct {
 	db  mysql.Client
 }
 
-func NewApplication(ctx context.Context, cfg *config.EnvConfig) *App {
+func NewApplication(ctx context.Context) *App {
+
+	cfg, err := config.LoadEnvConfig()
+	if err != nil {
+		log.Fatalf("fail to read config err : %v", err)
+	}
+
+	reporter.NewSlackReporter(cfg.Slack)
+
+	if err := logger.SlogInit(cfg.Logger); err != nil {
+		log.Fatalf("fail to init slog err : %v", err)
+	}
 
 	db, err := mysql.NewMysqlSingleClient(ctx, cfg.Mysql)
 	if err != nil {

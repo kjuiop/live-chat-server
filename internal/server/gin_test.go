@@ -7,6 +7,7 @@ import (
 	"live-chat-server/api/controller"
 	"live-chat-server/api/route"
 	"live-chat-server/config"
+	"live-chat-server/internal/domain/system/usecase/mocks"
 	"net/http"
 	"sync"
 	"testing"
@@ -23,9 +24,10 @@ func TestRunAndShutdown(t *testing.T) {
 	}
 
 	s := NewGinServer(cfg)
+	sm := mocks.NewSystemUseCaseStub()
 	router := route.RouterConfig{
 		Engine:           s.GetEngine(),
-		SystemController: controller.NewSystemController(),
+		SystemController: controller.NewSystemController(sm),
 	}
 	router.SetupSystemRouter(router.Engine.Group("/api"))
 
