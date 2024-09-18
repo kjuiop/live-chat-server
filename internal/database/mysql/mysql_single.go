@@ -5,15 +5,15 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"io"
 	"live-chat-server/config"
 	"live-chat-server/internal/domain/system"
+	"live-chat-server/internal/utils"
 	"log"
 	"log/slog"
-	"os"
-	"path/filepath"
 	"strings"
 )
+
+const sqlFilePath = "internal/database/mysql/schema/database.sql"
 
 type mysqlClient struct {
 	cfg config.Mysql
@@ -59,21 +59,13 @@ func (m *mysqlClient) checkDefaultTable() error {
 		return nil
 	}
 
-	// SQL 파일 열기
-	file, err := os.Open("schema/database.sql")
+	content, err := utils.ReadFileContent(sqlFilePath)
 	if err != nil {
-		log.Fatalf("Error opening SQL file: %v", err)
-	}
-	defer file.Close()
-
-	// SQL 파일 내용을 읽기
-	content, err := io.ReadAll(file)
-	if err != nil {
-		log.Fatalf("Error reading SQL file: %v", err)
+		log.Fatalf("error opening SQL file: %v", err)
 	}
 
 	// SQL 파일 내용을 문자열로 변환하고 쿼리를 세미콜론(;)으로 분리
-	queries := strings.Split(string(content), ";")
+	queries := strings.Split(content, ";")
 
 	// 각 쿼리를 실행
 	for _, query := range queries {
@@ -83,7 +75,6 @@ func (m *mysqlClient) checkDefaultTable() error {
 			continue
 		}
 
-		// 쿼리 실행
 		_, err = m.db.Exec(query)
 		if err != nil {
 			return fmt.Errorf("error executing query : %s, err : %w", query, err)
@@ -121,15 +112,6 @@ func (m *mysqlClient) GetServerList(qs string) ([]system.ServerInfo, error) {
 	}
 
 	return result, nil
-}
-
-func getDatabaseFilePath() (string, error) {
-	exePath, err := os.Executable()
-	if err != nil {
-		return "", err
-	}
-	exeDir := filepath.Dir(exePath)
-	return filepath.Join(exeDir, "schema", "database.sql"), nil
 }
 
 func checkExistChatQuery() string {

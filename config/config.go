@@ -22,7 +22,7 @@ type Server struct {
 type Logger struct {
 	Level       string `envconfig:"LCS_LOG_LEVEL" default:"debug"`
 	Path        string `envconfig:"LCS_LOG_PATH" default:"./logs/access.log"`
-	PrintStdOut bool   `envconfig:"LOG_STDOUT" default:"false"`
+	PrintStdOut bool   `envconfig:"LOG_STDOUT" default:"true"`
 }
 
 type Slack struct {
