@@ -11,6 +11,7 @@ import (
 	sr "live-chat-server/internal/domain/system/repository"
 	su "live-chat-server/internal/domain/system/usecase"
 	"live-chat-server/internal/logger"
+	"live-chat-server/internal/mq/kafka"
 	"live-chat-server/internal/reporter"
 	"live-chat-server/internal/server"
 	"log"
@@ -22,6 +23,7 @@ type App struct {
 	cfg *config.EnvConfig
 	srv server.Client
 	db  mysql.Client
+	mq  kafka.Client
 }
 
 func NewApplication(ctx context.Context) *App {
@@ -42,12 +44,15 @@ func NewApplication(ctx context.Context) *App {
 		log.Fatalf("fail to connect redis client")
 	}
 
+	mq, err := kafka.NewKafkaClient(cfg.Kafka)
+
 	srv := server.NewGinServer(cfg)
 
 	app := &App{
 		cfg: cfg,
 		srv: srv,
 		db:  db,
+		mq:  mq,
 	}
 
 	if err := app.setupRouter(); err != nil {
