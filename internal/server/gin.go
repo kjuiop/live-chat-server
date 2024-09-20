@@ -7,8 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"live-chat-server/api/middleware"
 	"live-chat-server/config"
+	"log"
 	"log/slog"
 	"net/http"
+	"strings"
 	"sync"
 )
 
@@ -22,6 +24,10 @@ func NewGinServer(cfg *config.EnvConfig) Client {
 
 	serverCfg := cfg.Server
 	router := getGinEngine(serverCfg.Mode)
+
+	if err := router.SetTrustedProxies(strings.Split(serverCfg.TrustedProxies, ",")); err != nil {
+		log.Fatalf("failed set trust proxies, err : %v", err)
+	}
 
 	router.Use(middleware.LoggingMiddleware)
 	router.Use(middleware.RecoveryErrorReport())

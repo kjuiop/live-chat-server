@@ -16,8 +16,9 @@ type EnvConfig struct {
 }
 
 type Server struct {
-	Mode string `envconfig:"LCS_ENV" default:"dev"`
-	Port string `envconfig:"LCS_SERVER_PORT" default:"8090"`
+	Mode           string `envconfig:"LCS_ENV" default:"dev"`
+	Port           string `envconfig:"LCS_SERVER_PORT" default:"8090"`
+	TrustedProxies string `envconfig:"LCS_TRUSTED_PROXIES" default:"127.0.0.1/32"`
 }
 
 type Logger struct {
