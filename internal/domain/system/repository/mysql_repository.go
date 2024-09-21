@@ -4,6 +4,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"live-chat-server/internal/database/mysql"
 	"live-chat-server/internal/domain/system"
+	"log/slog"
 	"strings"
 )
 
@@ -37,6 +38,8 @@ func (s *systemMySqlRepository) GetAvailableServerList() ([]system.ServerInfo, e
 
 		if ip, ok := row["ip"].(string); ok {
 			serverInfo.IP = ip
+		} else {
+			slog.Warn("unexpected type for ip field", "value", row["ip"])
 		}
 
 		if available, ok := row["available"].(int); ok {

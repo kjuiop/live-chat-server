@@ -126,38 +126,6 @@ func (m *mysqlClient) GetServerList(qs string) ([]map[string]interface{}, error)
 	return result, nil
 }
 
-/**
-func (m *mysqlClient) GetServerList(qs string) ([]system.ServerInfo, error) {
-
-	cursor, err := m.db.Query(qs)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close()
-
-	var result []system.ServerInfo
-
-	for cursor.Next() {
-		d := new(system.ServerInfo)
-
-		if err := cursor.Scan(
-			d.IP,
-			d.Available,
-		); err != nil {
-			return nil, err
-		}
-
-		result = append(result, *d)
-	}
-
-	if len(result) == 0 {
-		return []system.ServerInfo{}, nil
-	}
-
-	return result, nil
-}
-*/
-
 func checkExistChatQuery() string {
 	return `
     SELECT COUNT(*)
