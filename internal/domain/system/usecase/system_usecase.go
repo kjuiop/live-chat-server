@@ -7,13 +7,15 @@ import (
 
 type systemUseCase struct {
 	systemRepo    system.Repository
+	systemPubSub  system.PubSub
 	avgServerList map[string]bool
 }
 
-func NewSystemUseCase(repository system.Repository) system.UseCase {
+func NewSystemUseCase(repository system.Repository, systemPubSub system.PubSub) system.UseCase {
 
 	s := &systemUseCase{
 		systemRepo:    repository,
+		systemPubSub:  systemPubSub,
 		avgServerList: make(map[string]bool),
 	}
 

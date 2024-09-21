@@ -16,3 +16,6 @@ type UseCase interface {
 type Repository interface {
 	GetAvailableServerList() ([]ServerInfo, error)
 }
+
+type PubSub interface {
+}

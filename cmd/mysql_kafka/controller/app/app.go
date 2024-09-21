@@ -8,6 +8,7 @@ import (
 	"live-chat-server/internal/database/mysql"
 	rr "live-chat-server/internal/domain/room/repository"
 	ru "live-chat-server/internal/domain/room/usecase"
+	spq "live-chat-server/internal/domain/system/pubsub"
 	sr "live-chat-server/internal/domain/system/repository"
 	su "live-chat-server/internal/domain/system/usecase"
 	"live-chat-server/internal/logger"
@@ -75,13 +76,16 @@ func (a *App) setupRouter() error {
 
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
 
+	// mq
+	systemPubSub := spq.NewSystemPubSub(a.cfg.Kafka, a.mq)
+
 	// repository
 	roomRepository := rr.NewRoomMysqlRepository(a.db)
 	systemRepository := sr.NewSystemMySqlRepository(a.db)
 
 	// use_case
 	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)
-	systemUseCase := su.NewSystemUseCase(systemRepository)
+	systemUseCase := su.NewSystemUseCase(systemRepository, systemPubSub)
 
 	// controller
 	roomController := controller.NewRoomController(a.cfg.Policy, roomUseCase)
