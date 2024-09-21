@@ -21,7 +21,7 @@ func NewKafkaClient(cfg config.Kafka) (Client, error) {
 		return nil, err
 	}
 
-	return kafkaClient{
+	return &kafkaClient{
 		cfg:      cfg,
 		consumer: consumer,
 	}, nil

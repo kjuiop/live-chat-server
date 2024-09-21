@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// repository 에서는 쿼리를 작성하고, struct 으로 변경한다.
 type systemMySqlRepository struct {
 	db mysql.Client
 }
@@ -24,12 +25,29 @@ func NewSystemMySqlRepository(db mysql.Client) system.Repository {
 func (s *systemMySqlRepository) GetAvailableServerList() ([]system.ServerInfo, error) {
 	qs := query([]string{"SELECT * FROM", serverInfo, "WHERE available = 1"})
 
-	list, err := s.db.GetServerList(qs)
+	rows, err := s.db.GetServerList(qs)
 	if err != nil {
 		return nil, err
 	}
 
-	return list, nil
+	var result []system.ServerInfo
+
+	for _, row := range rows {
+		serverInfo := system.ServerInfo{}
+
+		if ip, ok := row["ip"].(string); ok {
+			serverInfo.IP = ip
+		}
+
+		if available, ok := row["available"].(int); ok {
+			isAvailable := available == 1
+			serverInfo.Available = isAvailable
+		}
+
+		result = append(result, serverInfo)
+	}
+
+	return result, nil
 }
 
 func query(qs []string) string {
