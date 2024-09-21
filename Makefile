@@ -30,16 +30,15 @@ redis_single-build:
 	cp $(OUTPUT) ./$(MODULE_NAME)
 
 mk_controller-build:
-	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_CONTROLLER)
+	GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_CONTROLLER)
 	cp $(OUTPUT) ./$(MODULE_NAME)
 
 mk_worker-build:
-	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_WORKER)
+	GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_WORKER)
 	cp $(OUTPUT) ./$(MODULE_NAME)
 
 local-build:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(REDIS_SINGLE_MAIN)
-	mv $(OUTPUT) ./$(MODULE_NAME)
+	GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(PROJECT_PATH)/$(MODULE_NAME) $(PROJECT_PATH)$(MYSQL_KAFKA_CONTROLLER)
 
 target-version:
 	@echo "========================================"

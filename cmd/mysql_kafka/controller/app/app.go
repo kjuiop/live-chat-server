@@ -8,9 +8,11 @@ import (
 	"live-chat-server/internal/database/mysql"
 	rr "live-chat-server/internal/domain/room/repository"
 	ru "live-chat-server/internal/domain/room/usecase"
+	spq "live-chat-server/internal/domain/system/pubsub"
 	sr "live-chat-server/internal/domain/system/repository"
 	su "live-chat-server/internal/domain/system/usecase"
 	"live-chat-server/internal/logger"
+	"live-chat-server/internal/mq/kafka"
 	"live-chat-server/internal/reporter"
 	"live-chat-server/internal/server"
 	"log"
@@ -22,6 +24,7 @@ type App struct {
 	cfg *config.EnvConfig
 	srv server.Client
 	db  mysql.Client
+	mq  kafka.Client
 }
 
 func NewApplication(ctx context.Context) *App {
@@ -42,15 +45,21 @@ func NewApplication(ctx context.Context) *App {
 		log.Fatalf("fail to connect redis client")
 	}
 
+	mq, err := kafka.NewKafkaClient(cfg.Kafka)
+	if err != nil {
+		log.Fatalf("fail to connect kafka client")
+	}
+
 	srv := server.NewGinServer(cfg)
 
 	app := &App{
 		cfg: cfg,
 		srv: srv,
 		db:  db,
+		mq:  mq,
 	}
 
-	if err := app.setupRouter(); err != nil {
+	if err := app.setupRouter(ctx); err != nil {
 		log.Fatalf("failed initialize router, err : %v", err)
 	}
 
@@ -66,9 +75,12 @@ func (a *App) Stop(ctx context.Context) {
 	a.db.Close()
 }
 
-func (a *App) setupRouter() error {
+func (a *App) setupRouter(ctx context.Context) error {
 
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
+
+	// mq
+	systemPubSub := spq.NewSystemPubSub(a.cfg.Kafka, a.mq)
 
 	// repository
 	roomRepository := rr.NewRoomMysqlRepository(a.db)
@@ -76,7 +88,7 @@ func (a *App) setupRouter() error {
 
 	// use_case
 	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)
-	systemUseCase := su.NewSystemUseCase(systemRepository)
+	systemUseCase := su.NewSystemUseCase(ctx, systemRepository, systemPubSub)
 
 	// controller
 	roomController := controller.NewRoomController(a.cfg.Policy, roomUseCase)

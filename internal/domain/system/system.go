@@ -1,5 +1,9 @@
 package system
 
+import (
+	"live-chat-server/internal/mq/types"
+)
+
 type HealthRes struct {
 	Message string `json:"message"`
 }
@@ -15,4 +19,9 @@ type UseCase interface {
 
 type Repository interface {
 	GetAvailableServerList() ([]ServerInfo, error)
+}
+
+type PubSub interface {
+	RegisterSubTopic(topic string) error
+	Poll(timeoutMs int) types.Event
 }

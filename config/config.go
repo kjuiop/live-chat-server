@@ -12,11 +12,13 @@ type EnvConfig struct {
 	Redis  Redis
 	Policy Policy
 	Mysql  Mysql
+	Kafka  Kafka
 }
 
 type Server struct {
-	Mode string `envconfig:"LCS_ENV" default:"dev"`
-	Port string `envconfig:"LCS_SERVER_PORT" default:"8090"`
+	Mode           string `envconfig:"LCS_ENV" default:"dev"`
+	Port           string `envconfig:"LCS_SERVER_PORT" default:"8090"`
+	TrustedProxies string `envconfig:"LCS_TRUSTED_PROXIES" default:"127.0.0.1/32"`
 }
 
 type Logger struct {
@@ -44,6 +46,11 @@ type Mysql struct {
 type Policy struct {
 	Prefix         string `envconfig:"LCS_ROOM_PREFIX" default:"N1,N2"`
 	ContextTimeout int    `envconfig:"LCS_CONTEXT_TIMEOUT" default:"60"`
+}
+
+type Kafka struct {
+	URL     string `envconfig:"LCS_KAFKA_URL" default:"localhost:9292"`
+	GroupID string `envconfig:"LCS_KAFKA_GROUP_ID" default:"chat-consumer-1"`
 }
 
 func LoadEnvConfig() (*EnvConfig, error) {

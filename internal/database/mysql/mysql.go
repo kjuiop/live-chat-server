@@ -6,7 +6,6 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"live-chat-server/config"
-	"live-chat-server/internal/domain/system"
 	"live-chat-server/internal/utils"
 	"log"
 	"log/slog"
@@ -84,6 +83,50 @@ func (m *mysqlClient) checkDefaultTable() error {
 	return nil
 }
 
+func (m *mysqlClient) GetServerList(qs string) ([]map[string]interface{}, error) {
+
+	cursor, err := m.db.Query(qs)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	columns, err := cursor.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []map[string]interface{}
+
+	for cursor.Next() {
+		values := make([]interface{}, len(columns))
+		valuePtrs := make([]interface{}, len(columns))
+
+		// pointer 로 변환
+		for i := range columns {
+			valuePtrs[i] = &values[i]
+		}
+
+		if err := cursor.Scan(valuePtrs...); err != nil {
+			return nil, err
+		}
+
+		rowMap := make(map[string]interface{})
+		for i, col := range columns {
+			rowMap[col] = values[i]
+		}
+
+		result = append(result, rowMap)
+	}
+
+	if len(result) == 0 {
+		return []map[string]interface{}{}, nil
+	}
+
+	return result, nil
+}
+
+/**
 func (m *mysqlClient) GetServerList(qs string) ([]system.ServerInfo, error) {
 
 	cursor, err := m.db.Query(qs)
@@ -113,6 +156,7 @@ func (m *mysqlClient) GetServerList(qs string) ([]system.ServerInfo, error) {
 
 	return result, nil
 }
+*/
 
 func checkExistChatQuery() string {
 	return `
