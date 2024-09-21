@@ -17,3 +17,10 @@ func NewSystemPubSub(cfg config.Kafka, mq kafka.Client) system.PubSub {
 		mq:  mq,
 	}
 }
+
+func (p *PubSub) RegisterSubTopic(topic string) error {
+	if err := p.mq.Subscribe(topic); err != nil {
+		return err
+	}
+	return nil
+}

@@ -26,3 +26,11 @@ func NewKafkaClient(cfg config.Kafka) (Client, error) {
 		consumer: consumer,
 	}, nil
 }
+
+func (k *kafkaClient) Subscribe(topic string) error {
+	if err := k.consumer.Subscribe(topic, nil); err != nil {
+		return err
+	}
+
+	return nil
+}

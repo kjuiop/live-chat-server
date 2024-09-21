@@ -23,6 +23,10 @@ func NewSystemUseCase(repository system.Repository, systemPubSub system.PubSub) 
 		log.Fatalf("failed register server info, err : %v", err)
 	}
 
+	if err := s.systemPubSub.RegisterSubTopic("chat"); err != nil {
+		log.Fatalf("failed register topic, err : %v", err)
+	}
+
 	return s
 }
 

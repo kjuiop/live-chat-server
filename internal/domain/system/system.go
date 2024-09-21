@@ -18,4 +18,5 @@ type Repository interface {
 }
 
 type PubSub interface {
+	RegisterSubTopic(topic string) error
 }
