@@ -1,8 +1,11 @@
 package usecase
 
 import (
+	"encoding/json"
 	"live-chat-server/internal/domain/system"
+	"live-chat-server/internal/mq/types"
 	"log"
+	"log/slog"
 )
 
 type systemUseCase struct {
@@ -26,6 +29,8 @@ func NewSystemUseCase(repository system.Repository, systemPubSub system.PubSub) 
 	if err := s.systemPubSub.RegisterSubTopic("chat"); err != nil {
 		log.Fatalf("failed register topic, err : %v", err)
 	}
+
+	go s.loopSubKafka()
 
 	return s
 }
@@ -62,6 +67,30 @@ func (s *systemUseCase) setServerInfo() error {
 	}
 
 	return nil
+}
+
+func (s *systemUseCase) loopSubKafka() {
+	for {
+		ev := s.systemPubSub.Poll(100)
+		if ev.IsError() {
+			errorEvent := ev.(*types.Error)
+			slog.Error("Failed to Polling event", "error", errorEvent.Error)
+			continue
+		}
+
+		if ev.IsMessage() {
+			message := ev.(*types.Message)
+
+			var decoder system.ServerInfo
+			if err := json.Unmarshal(message.Value, &decoder); err != nil {
+				slog.Error("failed to decode event", "event_value", string(message.Value))
+				continue
+			}
+
+			slog.Debug("received kafka event", "event_value", string(message.Value))
+			s.avgServerList[decoder.IP] = decoder.Available
+		}
+	}
 }
 
 func (s *systemUseCase) GetAvailableServerList() ([]system.ServerInfo, error) {
