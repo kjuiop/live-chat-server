@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"encoding/json"
 	"live-chat-server/internal/domain/system"
 	"live-chat-server/internal/mq/types"
@@ -14,7 +15,7 @@ type systemUseCase struct {
 	avgServerList map[string]bool
 }
 
-func NewSystemUseCase(repository system.Repository, systemPubSub system.PubSub) system.UseCase {
+func NewSystemUseCase(ctx context.Context, repository system.Repository, systemPubSub system.PubSub) system.UseCase {
 
 	s := &systemUseCase{
 		systemRepo:    repository,
@@ -30,7 +31,7 @@ func NewSystemUseCase(repository system.Repository, systemPubSub system.PubSub) 
 		log.Fatalf("failed register topic, err : %v", err)
 	}
 
-	go s.loopSubKafka()
+	go s.loopSubKafka(ctx)
 
 	return s
 }
@@ -69,26 +70,38 @@ func (s *systemUseCase) setServerInfo() error {
 	return nil
 }
 
-func (s *systemUseCase) loopSubKafka() {
+func (s *systemUseCase) loopSubKafka(ctx context.Context) {
 	for {
-		ev := s.systemPubSub.Poll(100)
-		if ev.IsError() {
-			errorEvent := ev.(*types.Error)
-			slog.Error("Failed to Polling event", "error", errorEvent.Error)
-			continue
-		}
 
-		if ev.IsMessage() {
-			message := ev.(*types.Message)
+		select {
+		case <-ctx.Done():
+			slog.Debug("Context cancelled, stopping Kafka loop")
+			return // context가 취소되면 루프 종료
 
-			var decoder system.ServerInfo
-			if err := json.Unmarshal(message.Value, &decoder); err != nil {
-				slog.Error("failed to decode event", "event_value", string(message.Value))
+		default:
+			ev := s.systemPubSub.Poll(1000)
+			if ev == nil {
 				continue
 			}
 
-			slog.Debug("received kafka event", "event_value", string(message.Value))
-			s.avgServerList[decoder.IP] = decoder.Available
+			if ev.IsError() {
+				errorEvent := ev.(*types.Error)
+				slog.Error("Failed to Polling event", "error", errorEvent.Error)
+				continue
+			}
+
+			if ev.IsMessage() {
+				message := ev.(*types.Message)
+
+				var decoder system.ServerInfo
+				if err := json.Unmarshal(message.Value, &decoder); err != nil {
+					slog.Error("failed to decode event", "event_value", string(message.Value))
+					continue
+				}
+
+				slog.Debug("received kafka event", "event_value", string(message.Value))
+				s.avgServerList[decoder.IP] = decoder.Available
+			}
 		}
 	}
 }

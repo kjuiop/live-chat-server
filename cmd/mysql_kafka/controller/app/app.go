@@ -46,6 +46,9 @@ func NewApplication(ctx context.Context) *App {
 	}
 
 	mq, err := kafka.NewKafkaClient(cfg.Kafka)
+	if err != nil {
+		log.Fatalf("fail to connect kafka client")
+	}
 
 	srv := server.NewGinServer(cfg)
 
@@ -56,7 +59,7 @@ func NewApplication(ctx context.Context) *App {
 		mq:  mq,
 	}
 
-	if err := app.setupRouter(); err != nil {
+	if err := app.setupRouter(ctx); err != nil {
 		log.Fatalf("failed initialize router, err : %v", err)
 	}
 
@@ -72,7 +75,7 @@ func (a *App) Stop(ctx context.Context) {
 	a.db.Close()
 }
 
-func (a *App) setupRouter() error {
+func (a *App) setupRouter(ctx context.Context) error {
 
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
 
@@ -85,7 +88,7 @@ func (a *App) setupRouter() error {
 
 	// use_case
 	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)
-	systemUseCase := su.NewSystemUseCase(systemRepository, systemPubSub)
+	systemUseCase := su.NewSystemUseCase(ctx, systemRepository, systemPubSub)
 
 	// controller
 	roomController := controller.NewRoomController(a.cfg.Policy, roomUseCase)
