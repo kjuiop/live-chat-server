@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"live-chat-server/internal/domain/system"
 	"live-chat-server/internal/mq/types"
 	"log"
@@ -27,13 +28,11 @@ func NewSystemUseCase(ctx context.Context, repository system.Repository, systemP
 		log.Fatalf("failed register server info, err : %v", err)
 	}
 
-	if err := s.systemPubSub.RegisterSubTopic("chat"); err != nil {
-		log.Fatalf("failed register topic, err : %v", err)
-	}
-
-	go s.loopSubKafka(ctx)
-
 	return s
+}
+
+func (s *systemUseCase) RegisterSubTopic(topic string) error {
+	return s.systemPubSub.RegisterSubTopic(topic)
 }
 
 func (s *systemUseCase) GetServerList() ([]system.ServerInfo, error) {
@@ -70,40 +69,35 @@ func (s *systemUseCase) setServerInfo() error {
 	return nil
 }
 
-func (s *systemUseCase) loopSubKafka(ctx context.Context) {
-	for {
+func (s *systemUseCase) LoopSubKafka(timeoutMs int) (*types.Message, error) {
 
-		select {
-		case <-ctx.Done():
-			slog.Debug("Context cancelled, stopping Kafka loop")
-			return // context가 취소되면 루프 종료
+	// Kafka 이벤트 처리
+	ev := s.systemPubSub.Poll(timeoutMs) // Polling 1000ms 동안 이벤트 대기
 
-		default:
-			ev := s.systemPubSub.Poll(1000)
-			if ev == nil {
-				continue
-			}
-
-			if ev.IsError() {
-				errorEvent := ev.(*types.Error)
-				slog.Error("Failed to Polling event", "error", errorEvent.Error)
-				continue
-			}
-
-			if ev.IsMessage() {
-				message := ev.(*types.Message)
-
-				var decoder system.ServerInfo
-				if err := json.Unmarshal(message.Value, &decoder); err != nil {
-					slog.Error("failed to decode event", "event_value", string(message.Value))
-					continue
-				}
-
-				slog.Debug("received kafka event", "event_value", string(message.Value))
-				s.avgServerList[decoder.IP] = decoder.Available
-			}
-		}
+	if ev == nil {
+		return nil, nil
 	}
+
+	if ev.IsError() {
+		errorEvent := ev.(*types.Error)
+		slog.Error("Failed to Polling event", "error", errorEvent.Error)
+		return nil, fmt.Errorf("consumer event error, err : %v", errorEvent.Error)
+	}
+
+	if !ev.IsMessage() {
+		return nil, fmt.Errorf("is not expected message, event : %v", ev)
+	}
+
+	message := ev.(*types.Message)
+
+	var decoder system.ServerInfo
+	if err := json.Unmarshal(message.Value, &decoder); err != nil {
+		slog.Error("failed to decode event", "event_value", string(message.Value))
+		return nil, err
+	}
+
+	s.avgServerList[decoder.IP] = decoder.Available
+	return &types.Message{Value: message.Value}, nil
 }
 
 func (s *systemUseCase) GetAvailableServerList() ([]system.ServerInfo, error) {

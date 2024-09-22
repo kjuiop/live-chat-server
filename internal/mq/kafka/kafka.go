@@ -92,8 +92,13 @@ func (k *kafkaClient) PublishEvent(topic string, data []byte) (types.Event, erro
 	}
 }
 
-func (k *kafkaClient) Close() {
-	if err := k.consumer.Close(); err != nil {
-		slog.Error("failed closed kafka, err : %s", err.Error())
+func (k *kafkaClient) Close(mqType string) {
+	if mqType == "consumer" {
+		if err := k.consumer.Close(); err != nil {
+			slog.Error("failed closed kafka, err : %s", err.Error())
+		}
+	} else {
+		k.producer.Close()
 	}
+
 }

@@ -37,8 +37,11 @@ mk_worker-build:
 	GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_WORKER)
 	cp $(OUTPUT) ./$(MODULE_NAME)
 
-local-build:
-	GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(PROJECT_PATH)/$(MODULE_NAME) $(PROJECT_PATH)$(MYSQL_KAFKA_WORKER)
+mkc_local-build:
+	GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(PROJECT_PATH)/$(MODULE_NAME) $(PROJECT_PATH)$(MYSQL_KAFKA_CONTROLLER)
+
+mkw_local-build:
+	GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" $(GOFLAGS) -o $(PROJECT_PATH)/$(MODULE_NAME) $(PROJECT_PATH)$(MYSQL_KAFKA_WORKER)
 
 target-version:
 	@echo "========================================"
