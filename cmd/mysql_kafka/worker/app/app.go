@@ -30,6 +30,7 @@ type App struct {
 	db            mysql.Client
 	mq            kafka.Client
 	systemUseCase system.UseCase
+	addr          string
 }
 
 func NewApplication(ctx context.Context) *App {
@@ -78,6 +79,8 @@ func (a *App) Start(wg *sync.WaitGroup) {
 }
 
 func (a *App) Stop(ctx context.Context) {
+	a.systemUseCase.PublishServerStatusEvent(a.addr, false)
+
 	a.srv.Shutdown(ctx)
 	a.db.Close()
 	a.mq.Close("producer")
@@ -135,6 +138,6 @@ func (a *App) registerServer() {
 	if err := a.systemUseCase.SetChatServerInfo(addr, true); err != nil {
 		log.Fatalf("failed register server info, address : %s, err : %v", addr, err)
 	}
-
+	a.addr = addr
 	a.systemUseCase.PublishServerStatusEvent(addr, true)
 }
