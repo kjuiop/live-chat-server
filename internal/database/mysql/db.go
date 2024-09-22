@@ -1,7 +1,7 @@
 package mysql
 
 type Client interface {
-	GetServerList(qs string) ([]map[string]interface{}, error)
+	ExecQueryAndFetchRows(qs string, args ...interface{}) ([]map[string]interface{}, error)
 	ExecQuery(qs string, args ...interface{}) error
 	Close()
 }

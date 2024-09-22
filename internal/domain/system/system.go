@@ -15,12 +15,12 @@ type ServerInfo struct {
 
 type UseCase interface {
 	GetServerList() ([]ServerInfo, error)
-	ChatServerSet(ip string, available bool) error
+	SetChatServerInfo(ip string, available bool) error
 }
 
 type Repository interface {
 	GetAvailableServerList() ([]ServerInfo, error)
-	SetChatServer(ip string, available bool) error
+	SetChatServerInfo(ip string, available bool) error
 }
 
 type PubSub interface {

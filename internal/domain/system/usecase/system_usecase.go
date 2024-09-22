@@ -110,8 +110,8 @@ func (s *systemUseCase) GetAvailableServerList() ([]system.ServerInfo, error) {
 	return s.systemRepo.GetAvailableServerList()
 }
 
-func (s *systemUseCase) ChatServerSet(ip string, available bool) error {
-	if err := s.systemRepo.SetChatServer(ip, available); err != nil {
+func (s *systemUseCase) SetChatServerInfo(ip string, available bool) error {
+	if err := s.systemRepo.SetChatServerInfo(ip, available); err != nil {
 		return err
 	}
 	return nil

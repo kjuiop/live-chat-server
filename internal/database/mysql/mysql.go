@@ -83,9 +83,9 @@ func (m *mysqlClient) checkDefaultTable() error {
 	return nil
 }
 
-func (m *mysqlClient) GetServerList(qs string) ([]map[string]interface{}, error) {
+func (m *mysqlClient) ExecQueryAndFetchRows(qs string, args ...interface{}) ([]map[string]interface{}, error) {
 
-	cursor, err := m.db.Query(qs)
+	cursor, err := m.db.Query(qs, args...)
 	if err != nil {
 		return nil, err
 	}
