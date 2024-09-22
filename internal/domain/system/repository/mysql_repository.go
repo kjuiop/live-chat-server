@@ -23,6 +23,11 @@ func NewSystemMySqlRepository(db mysql.Client) system.Repository {
 	}
 }
 
+func (s *systemMySqlRepository) SetChatServer(ip string, available bool) error {
+	query := "INSERT INTO chatting.serverInfo(`ip`, `available`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `available` = VALUES(`available`)"
+	return s.db.ExecQuery(query, ip, available)
+}
+
 func (s *systemMySqlRepository) GetAvailableServerList() ([]system.ServerInfo, error) {
 	qs := query([]string{"SELECT * FROM", serverInfo, "WHERE available = 1"})
 

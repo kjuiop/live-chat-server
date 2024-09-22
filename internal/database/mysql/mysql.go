@@ -126,6 +126,11 @@ func (m *mysqlClient) GetServerList(qs string) ([]map[string]interface{}, error)
 	return result, nil
 }
 
+func (m *mysqlClient) ExecQuery(query string, args ...interface{}) error {
+	_, err := m.db.Exec(query, args...)
+	return err
+}
+
 func checkExistChatQuery() string {
 	return `
     SELECT COUNT(*)

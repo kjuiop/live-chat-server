@@ -10,6 +10,7 @@ import (
 	"live-chat-server/internal/domain/room/repository"
 	ru "live-chat-server/internal/domain/room/usecase"
 	"live-chat-server/internal/logger"
+	"live-chat-server/internal/mq/kafka"
 	"live-chat-server/internal/reporter"
 	"live-chat-server/internal/server"
 	"log"
@@ -21,6 +22,7 @@ type App struct {
 	cfg *config.EnvConfig
 	srv server.Client
 	db  mysql.Client
+	mq  kafka.Client
 }
 
 func NewApplication(ctx context.Context) *App {
@@ -41,15 +43,23 @@ func NewApplication(ctx context.Context) *App {
 		log.Fatalf("fail to connect redis client")
 	}
 
+	mq, err := kafka.NewKafkaClient(cfg.Kafka)
+	if err != nil {
+		log.Fatalf("fail to connect kafka client")
+	}
+
 	srv := server.NewGinServer(cfg)
 
 	app := &App{
 		cfg: cfg,
 		srv: srv,
 		db:  db,
+		mq:  mq,
 	}
 
-	app.setupRouter()
+	if err := app.setupRouter(); err != nil {
+		log.Fatalf("failed initialize router, err : %v", err)
+	}
 
 	return app
 }
@@ -60,9 +70,11 @@ func (a *App) Start(wg *sync.WaitGroup) {
 
 func (a *App) Stop(ctx context.Context) {
 	a.srv.Shutdown(ctx)
+	a.db.Close()
+	a.mq.Close()
 }
 
-func (a *App) setupRouter() {
+func (a *App) setupRouter() error {
 
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
 
@@ -80,4 +92,6 @@ func (a *App) setupRouter() {
 		ChatController: chatController,
 	}
 	router.WsSetup()
+
+	return nil
 }

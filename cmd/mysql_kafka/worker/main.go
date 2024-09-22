@@ -24,13 +24,13 @@ func main() {
 	wg.Add(1)
 	go a.Start(&wg)
 
-	slog.Debug("live chat server app start", "git_hash", GIT_HASH, "build_time", BUILD_TIME, "app_version", APP_VERSION)
+	slog.Debug("live chat worker app start", "git_hash", GIT_HASH, "build_time", BUILD_TIME, "app_version", APP_VERSION)
 
 	<-exitSignal()
 	a.Stop(ctx)
 	cancel()
 	wg.Wait()
-	slog.Debug("live chat server app gracefully stopped")
+	slog.Debug("live chat worker app gracefully stopped")
 }
 
 func exitSignal() <-chan os.Signal {

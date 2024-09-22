@@ -4,6 +4,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"live-chat-server/config"
 	"live-chat-server/internal/mq/types"
+	"log/slog"
 )
 
 type kafkaClient struct {
@@ -44,5 +45,11 @@ func (k *kafkaClient) Poll(timeoutMs int) types.Event {
 		return &types.Error{Error: event}
 	default:
 		return nil
+	}
+}
+
+func (k *kafkaClient) Close() {
+	if err := k.consumer.Close(); err != nil {
+		slog.Error("failed closed kafka, err : %s", err.Error())
 	}
 }
