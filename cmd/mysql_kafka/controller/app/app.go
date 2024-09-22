@@ -45,7 +45,7 @@ func NewApplication(ctx context.Context) *App {
 		log.Fatalf("fail to connect redis client")
 	}
 
-	mq, err := kafka.NewKafkaClient(cfg.Kafka)
+	mq, err := kafka.NewKafkaConsumerClient(cfg.Kafka)
 	if err != nil {
 		log.Fatalf("fail to connect kafka client")
 	}

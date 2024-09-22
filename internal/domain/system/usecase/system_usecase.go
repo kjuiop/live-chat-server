@@ -116,3 +116,20 @@ func (s *systemUseCase) SetChatServerInfo(ip string, available bool) error {
 	}
 	return nil
 }
+
+func (s *systemUseCase) PublishServerStatusEvent(addr string, status bool) {
+
+	serverInfo := system.ServerInfo{IP: addr, Available: status}
+
+	bytes, err := json.Marshal(serverInfo)
+	if err != nil {
+		log.Fatalf("failed register server info, address : %s, err : %v", addr, err)
+	}
+
+	event, err := s.systemPubSub.PublishEvent("chat", bytes)
+	if err != nil {
+		log.Fatalf("failed publish server info, addr : %s, err : %v", addr, err.Error())
+	}
+
+	slog.Debug("success server info publish event, %v", event)
+}

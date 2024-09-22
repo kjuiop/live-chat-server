@@ -49,8 +49,9 @@ type Policy struct {
 }
 
 type Kafka struct {
-	URL     string `envconfig:"LCS_KAFKA_URL" default:"localhost:9292"`
-	GroupID string `envconfig:"LCS_KAFKA_GROUP_ID" default:"chat-consumer-1"`
+	URL      string `envconfig:"LCS_KAFKA_URL" default:"localhost:9292"`
+	GroupID  string `envconfig:"LCS_KAFKA_GROUP_ID" default:"chat-consumer-1"`
+	ClientID string `envconfig:"LCS_KAFKA_CLIENT_ID" default:"chat-producer-1"`
 }
 
 func LoadEnvConfig() (*EnvConfig, error) {

@@ -50,7 +50,7 @@ func NewApplication(ctx context.Context) *App {
 		log.Fatalf("fail to connect redis client")
 	}
 
-	mq, err := kafka.NewKafkaClient(cfg.Kafka)
+	mq, err := kafka.NewKafkaProducerClient(cfg.Kafka)
 	if err != nil {
 		log.Fatalf("fail to connect kafka client")
 	}
@@ -136,4 +136,5 @@ func (a *App) registerServer() {
 		log.Fatalf("failed register server info, address : %s, err : %v", addr, err)
 	}
 
+	a.systemUseCase.PublishServerStatusEvent(addr, true)
 }
