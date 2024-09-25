@@ -31,11 +31,11 @@ redis_single-build:
 
 mk_controller-build:
 	GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_CONTROLLER)
-	cp $(OUTPUT) ./$(MODULE_NAME)
+	cp $(OUTPUT) ./mk_controller
 
 mk_worker-build:
 	GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(MYSQL_KAFKA_WORKER)
-	cp $(OUTPUT) ./$(MODULE_NAME)
+	cp $(OUTPUT) ./mk_worker
 
 mkc_local-build:
 	GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(PROJECT_PATH)/$(MODULE_NAME) $(PROJECT_PATH)$(MYSQL_KAFKA_CONTROLLER)

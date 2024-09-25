@@ -38,15 +38,16 @@ func (s *systemUseCase) RegisterSubTopic(topic string) error {
 func (s *systemUseCase) GetServerList() ([]system.ServerInfo, error) {
 
 	if len(s.avgServerList) == 0 {
-		return []system.ServerInfo{}, nil
+		return nil, nil
 	}
 
 	var res []system.ServerInfo
 
 	for ip, available := range s.avgServerList {
-		if available {
+		if len(ip) > 0 && available {
 			server := system.ServerInfo{
-				IP: ip,
+				IP:        ip,
+				Available: available,
 			}
 			res = append(res, server)
 		}
@@ -96,7 +97,15 @@ func (s *systemUseCase) LoopSubKafka(timeoutMs int) (*types.Message, error) {
 		return nil, err
 	}
 
+	if err := s.SetChatServerInfo(decoder.IP, decoder.Available); err != nil {
+		slog.Error("failed update server info", "server_ip", decoder.IP, "available", decoder.Available)
+		return nil, err
+	}
+
 	s.avgServerList[decoder.IP] = decoder.Available
+
+	slog.Debug("update chat server info", "server_ip", decoder.IP, "available", decoder.Available, "avg_server_list", s.avgServerList)
+
 	return &types.Message{Value: message.Value}, nil
 }
 
