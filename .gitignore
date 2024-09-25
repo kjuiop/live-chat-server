@@ -8,3 +8,5 @@ logs
 live-chat-server
 bin
 .env
+mk_controller
+mk_worker

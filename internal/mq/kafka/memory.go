@@ -18,3 +18,13 @@ func (m memoryClient) Poll(timeoutMs int) types.Event {
 	//TODO implement me
 	panic("implement me")
 }
+
+func (m memoryClient) PublishEvent(topic string, data []byte) (types.Event, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m memoryClient) Close(mqType string) {
+	//TODO implement me
+	panic("implement me")
+}

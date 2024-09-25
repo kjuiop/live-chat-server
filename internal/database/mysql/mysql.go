@@ -83,9 +83,9 @@ func (m *mysqlClient) checkDefaultTable() error {
 	return nil
 }
 
-func (m *mysqlClient) GetServerList(qs string) ([]map[string]interface{}, error) {
+func (m *mysqlClient) ExecQueryAndFetchRows(qs string, args ...interface{}) ([]map[string]interface{}, error) {
 
-	cursor, err := m.db.Query(qs)
+	cursor, err := m.db.Query(qs, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -126,37 +126,10 @@ func (m *mysqlClient) GetServerList(qs string) ([]map[string]interface{}, error)
 	return result, nil
 }
 
-/**
-func (m *mysqlClient) GetServerList(qs string) ([]system.ServerInfo, error) {
-
-	cursor, err := m.db.Query(qs)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close()
-
-	var result []system.ServerInfo
-
-	for cursor.Next() {
-		d := new(system.ServerInfo)
-
-		if err := cursor.Scan(
-			d.IP,
-			d.Available,
-		); err != nil {
-			return nil, err
-		}
-
-		result = append(result, *d)
-	}
-
-	if len(result) == 0 {
-		return []system.ServerInfo{}, nil
-	}
-
-	return result, nil
+func (m *mysqlClient) ExecQuery(query string, args ...interface{}) error {
+	_, err := m.db.Exec(query, args...)
+	return err
 }
-*/
 
 func checkExistChatQuery() string {
 	return `

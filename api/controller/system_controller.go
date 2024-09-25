@@ -53,6 +53,11 @@ func (s *SystemController) GetServerList(c *gin.Context) {
 		return
 	}
 
+	if len(list) == 0 {
+		s.successResponse(c, http.StatusOK, nil)
+		return
+	}
+
 	s.successResponse(c, http.StatusOK, list)
 	return
 }

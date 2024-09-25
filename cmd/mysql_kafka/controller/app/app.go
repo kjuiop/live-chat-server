@@ -8,6 +8,7 @@ import (
 	"live-chat-server/internal/database/mysql"
 	rr "live-chat-server/internal/domain/room/repository"
 	ru "live-chat-server/internal/domain/room/usecase"
+	"live-chat-server/internal/domain/system"
 	spq "live-chat-server/internal/domain/system/pubsub"
 	sr "live-chat-server/internal/domain/system/repository"
 	su "live-chat-server/internal/domain/system/usecase"
@@ -16,15 +17,17 @@ import (
 	"live-chat-server/internal/reporter"
 	"live-chat-server/internal/server"
 	"log"
+	"log/slog"
 	"sync"
 	"time"
 )
 
 type App struct {
-	cfg *config.EnvConfig
-	srv server.Client
-	db  mysql.Client
-	mq  kafka.Client
+	cfg           *config.EnvConfig
+	srv           server.Client
+	db            mysql.Client
+	mq            kafka.Client
+	systemUseCase system.UseCase
 }
 
 func NewApplication(ctx context.Context) *App {
@@ -45,7 +48,7 @@ func NewApplication(ctx context.Context) *App {
 		log.Fatalf("fail to connect redis client")
 	}
 
-	mq, err := kafka.NewKafkaClient(cfg.Kafka)
+	mq, err := kafka.NewKafkaConsumerClient(cfg.Kafka)
 	if err != nil {
 		log.Fatalf("fail to connect kafka client")
 	}
@@ -61,6 +64,10 @@ func NewApplication(ctx context.Context) *App {
 
 	if err := app.setupRouter(ctx); err != nil {
 		log.Fatalf("failed initialize router, err : %v", err)
+	}
+
+	if err := app.initProcess(); err != nil {
+		log.Fatalf("failed initialized process, err : %v", err)
 	}
 
 	return app
@@ -100,5 +107,40 @@ func (a *App) setupRouter(ctx context.Context) error {
 		RoomController:   roomController,
 	}
 	router.ApiSetup()
+	a.systemUseCase = systemUseCase
 	return nil
+}
+
+func (a *App) initProcess() error {
+
+	if err := a.systemUseCase.RegisterSubTopic("chat"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *App) LoopServerInfo(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for {
+		select {
+		case <-ctx.Done():
+			slog.Debug("close Loop Sub Kafka goroutine")
+			return
+		default:
+			event, err := a.systemUseCase.LoopSubKafka(a.cfg.Kafka.ConsumerTimeout)
+			if err != nil {
+				slog.Error("received event error", "error", err)
+				continue
+			}
+
+			if event == nil {
+				continue
+			}
+
+			slog.Debug("received event", "event", string(event.Value))
+		}
+	}
+
 }

@@ -22,7 +22,7 @@ import (
 )
 
 type App struct {
-	cfg *config.EnvConfig
+	cfg config.EnvConfig
 	srv server.Client
 	db  redis.Client
 	mq  kafka.Client
@@ -51,7 +51,7 @@ func NewApplication(ctx context.Context) *App {
 	srv := server.NewGinServer(cfg)
 
 	app := &App{
-		cfg: cfg,
+		cfg: *cfg,
 		srv: srv,
 		db:  db,
 		mq:  mq,
