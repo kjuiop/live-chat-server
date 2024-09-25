@@ -46,15 +46,21 @@ func (s *systemMySqlRepository) GetAvailableServerList() ([]system.ServerInfo, e
 	for _, row := range rows {
 		serverInfo := system.ServerInfo{}
 
-		if ip, ok := row["ip"].(string); ok {
+		if ipBytes, ok := row["ip"].([]byte); ok {
+			serverInfo.IP = string(ipBytes) // []byte를 string으로 변환
+		} else if ip, ok := row["ip"].(string); ok {
 			serverInfo.IP = ip
 		} else {
-			slog.Warn("unexpected type for ip field", "value", row["ip"])
+			slog.Error("unexpected type for ip field", "value", row["ip"])
+			continue // 타입이 예상과 다르면 현재 반복을 종료하고 다음으로 넘어감
 		}
 
-		if available, ok := row["available"].(int); ok {
+		if available, ok := row["available"].(int64); ok {
 			isAvailable := available == 1
 			serverInfo.Available = isAvailable
+		} else {
+			slog.Error("unexpected type for available field", "value", row["available"])
+			continue
 		}
 
 		result = append(result, serverInfo)
