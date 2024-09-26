@@ -23,8 +23,3 @@ func (m memoryClient) PublishEvent(topic string, data []byte) (types.Event, erro
 	//TODO implement me
 	panic("implement me")
 }
-
-func (m memoryClient) Close(mqType string) {
-	//TODO implement me
-	panic("implement me")
-}

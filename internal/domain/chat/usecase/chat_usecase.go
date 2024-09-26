@@ -14,18 +14,11 @@ import (
 
 var crMutex = &sync.RWMutex{}
 
-var upgrader = &websocket.Upgrader{
-	ReadBufferSize:  types.SocketBufferSize,
-	WriteBufferSize: types.MessageBufferSize,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 type chatUseCase struct {
 	roomUseCase    room.RoomUseCase
 	contextTimeout time.Duration
 	hub            map[string]*chat.Room
+	upgrader       *websocket.Upgrader
 }
 
 func NewChatUseCase(roomUseCase room.RoomUseCase, timeout time.Duration) chat.ChatUseCase {
@@ -33,20 +26,17 @@ func NewChatUseCase(roomUseCase room.RoomUseCase, timeout time.Duration) chat.Ch
 		roomUseCase:    roomUseCase,
 		contextTimeout: timeout,
 		hub:            make(map[string]*chat.Room),
+		upgrader: &websocket.Upgrader{
+			ReadBufferSize:  types.SocketBufferSize,
+			WriteBufferSize: types.MessageBufferSize,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
 	}
 }
 
-func (cu *chatUseCase) ServeWs(c context.Context, writer http.ResponseWriter, request *http.Request, roomId, userId string) error {
-
-	chatRoom, err := cu.getChatRoom(c, roomId)
-	if err != nil {
-		return err
-	}
-
-	socket, err := upgrader.Upgrade(writer, request, nil)
-	if err != nil {
-		return fmt.Errorf("failed connect socket, err : %w", err)
-	}
+func (cu *chatUseCase) ServeWs(c context.Context, socket *websocket.Conn, chatRoom *chat.Room, userId string) error {
 
 	client := chat.NewClient(socket, chatRoom, userId)
 
@@ -63,7 +53,7 @@ func (cu *chatUseCase) ServeWs(c context.Context, writer http.ResponseWriter, re
 	return nil
 }
 
-func (cu *chatUseCase) getChatRoom(c context.Context, roomId string) (*chat.Room, error) {
+func (cu *chatUseCase) GetChatRoom(c context.Context, roomId string) (*chat.Room, error) {
 
 	crMutex.Lock()
 	defer func() {
