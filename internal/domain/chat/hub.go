@@ -9,7 +9,7 @@ type Room struct {
 	RoomId string `json:"RoomId"`
 	Alive  bool   `json:"Alive"`
 
-	Forward chan *message // 수신되는 메시지를 보관하는 값
+	Forward chan *Message // 수신되는 메시지를 보관하는 값
 	// 들어오는 메시지를 다른 클라이언트에게 전송을 합니다.
 
 	Join  chan *Client // Socket 이 연결되는 경우에 적용
@@ -22,7 +22,7 @@ func NewChatRoom(roomInfo room.RoomInfo) *Room {
 	chatRoom := &Room{
 		RoomId:  roomInfo.RoomId,
 		Alive:   true,
-		Forward: make(chan *message),
+		Forward: make(chan *Message),
 		Join:    make(chan *Client),
 		Leave:   make(chan *Client),
 		Clients: make(map[*Client]bool),
@@ -54,7 +54,7 @@ func (r *Room) chatInit() {
 	}
 }
 
-func (r *Room) broadcastChat(msg *message) {
+func (r *Room) broadcastChat(msg *Message) {
 	for client := range r.Clients {
 		client.Send <- msg
 	}

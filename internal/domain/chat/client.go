@@ -8,7 +8,7 @@ import (
 )
 
 type Client struct {
-	Send   chan *message
+	Send   chan *Message
 	Room   *Room
 	UserID string
 	Socket *websocket.Conn
@@ -17,7 +17,7 @@ type Client struct {
 func NewClient(socket *websocket.Conn, r *Room, clientId string) *Client {
 	return &Client{
 		Socket: socket,
-		Send:   make(chan *message, types.MessageBufferSize),
+		Send:   make(chan *Message, types.MessageBufferSize),
 		Room:   r,
 		UserID: clientId,
 	}
@@ -47,7 +47,7 @@ func (c *Client) Read() {
 
 	// client 가 메시지를 읽는 함수
 	for {
-		var msg *message
+		var msg *Message
 		if err := c.Socket.ReadJSON(&msg); err != nil {
 			if !websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNoStatusReceived) {
 				break
