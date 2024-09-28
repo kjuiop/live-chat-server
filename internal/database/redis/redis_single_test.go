@@ -22,3 +22,21 @@ func TestRedisSingleConnect(t *testing.T) {
 	err := client.Ping(context.Background()).Err()
 	testAssert.NoError(err, "expected connection to succeed")
 }
+
+func TestRedisSetGet(t *testing.T) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := testClient.rdb.Set(ctx, "test_key", "test_value", 0).Err()
+	assert.NoError(t, err)
+
+	val, err := testClient.rdb.Get(ctx, "test_key").Result()
+	assert.NoError(t, err)
+	assert.Equal(t, "test_value", val)
+
+	t.Logf("test_key: %s", val)
+
+	err = testClient.rdb.Del(ctx, "test_key").Err()
+	assert.NoError(t, err)
+}
