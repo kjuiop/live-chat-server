@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+// redis-benchmark
+// select 0
+// redis 는 초당 10만건 정도는 수용할 수 있다.
+
 func TestRedisSingleConnect(t *testing.T) {
 
 	testAssert := assert.New(t)
