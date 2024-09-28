@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -70,4 +72,66 @@ func TestRedisSlowLog(t *testing.T) {
 
 	err = testClient.rdb.ConfigSet(ctx, "slowlog-log-slower-than", originalValue[1].(string)).Err()
 	assert.NoError(t, err)
+}
+
+func TestRedisInfo(t *testing.T) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Redis INFO 명령어 실행
+	info, err := testClient.rdb.Info(ctx).Result()
+	assert.NoError(t, err)
+
+	// INFO 명령어가 빈 문자열을 반환하지 않는지 확인
+	assert.NotEmpty(t, info)
+
+	t.Logf("redis info : %s", info)
+
+	// 특정 섹션에서 "used_memory"가 포함되어 있는지 확인
+	assert.True(t, strings.Contains(info, "used_memory"), "INFO 결과에 'used_memory'가 포함되어야 합니다.")
+}
+
+func TestRedisStat(t *testing.T) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// 1초 동안 Redis에 몇 개의 명령어를 발행
+	for i := 0; i < 100; i++ {
+		err := testClient.rdb.Set(ctx, "key:"+strconv.Itoa(i), "value", 0).Err()
+		assert.NoError(t, err)
+	}
+
+	// 통계 정보를 얻기 위해 잠시 대기
+	time.Sleep(1 * time.Second)
+
+	// Redis INFO 명령어 실행
+	info, err := testClient.rdb.Info(ctx).Result()
+	assert.NoError(t, err)
+
+	// INFO 결과에서 'instantaneous_ops_per_sec' 확인
+	lines := strings.Split(info, "\n")
+	var instantaneousOpsPerSec string
+	for _, line := range lines {
+		if strings.HasPrefix(line, "instantaneous_ops_per_sec:") {
+			instantaneousOpsPerSec = strings.TrimPrefix(line, "instantaneous_ops_per_sec:")
+			break
+		}
+	}
+
+	assert.NotEmpty(t, instantaneousOpsPerSec, "INFO 에 'instantaneous_ops_per_sec'가 포함되어야 합니다.")
+
+	// 초당 처리된 명령어 수가 0보다 큰지 확인
+	opsPerSec, err := strconv.Atoi(strings.TrimSpace(instantaneousOpsPerSec))
+	assert.NoError(t, err)
+
+	t.Logf("ops per sec : %d", opsPerSec)
+	assert.Greater(t, opsPerSec, 0, "초당 처리된 명령어 수가 0보다 커야 합니다.")
+
+	// 키 삭제
+	for i := 0; i < 100; i++ {
+		err := testClient.rdb.Del(ctx, "key:"+strconv.Itoa(i)).Err()
+		assert.NoError(t, err)
+	}
 }
