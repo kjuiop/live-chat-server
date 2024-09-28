@@ -1,9 +1,11 @@
 package redis
 
 import (
+	"bufio"
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
+	"net"
 	"strconv"
 	"strings"
 	"testing"
@@ -133,5 +135,42 @@ func TestRedisStat(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		err := testClient.rdb.Del(ctx, "key:"+strconv.Itoa(i)).Err()
 		assert.NoError(t, err)
+	}
+}
+
+func TestRedisMonitor(t *testing.T) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := net.Dial("tcp", "127.0.0.1:6379")
+	assert.NoError(t, err)
+	defer conn.Close()
+
+	// MONITOR 명령 전송
+	_, err = conn.Write([]byte("MONITOR\r\n"))
+	assert.NoError(t, err)
+
+	// 데이터베이스에 키-값 저장
+	err = testClient.rdb.Set(ctx, "key:monitor", "value for monitor", 0).Err()
+	assert.NoError(t, err)
+
+	// MONITOR 출력 읽기
+	scanner := bufio.NewScanner(conn)
+	go func() {
+		for scanner.Scan() {
+			t.Logf("MONITOR: %s", scanner.Text())
+		}
+	}()
+
+	time.Sleep(2 * time.Second)
+
+	// 클린업: 데이터 삭제
+	err = testClient.rdb.Del(ctx, "key:monitor").Err()
+	assert.NoError(t, err)
+
+	// 에러가 발생한 경우 오류 출력
+	if err := scanner.Err(); err != nil {
+		t.Errorf("Error reading from monitor: %v", err)
 	}
 }
