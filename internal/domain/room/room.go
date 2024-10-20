@@ -9,13 +9,6 @@ import (
 	"time"
 )
 
-const (
-	RedisPrefix            = "live-chat-server"
-	LiveChatServerRoom     = "live-chat-server-room"
-	LiveChatServerRoomList = "live-chat-server-room-list"
-	LiveChatRoomKeyTTL     = 7
-)
-
 type RoomRequest struct {
 	CustomerId   string `json:"customer_id" binding:"required"`
 	ChannelKey   string `json:"channel_key" binding:"required"`
@@ -37,7 +30,6 @@ type RoomResponse struct {
 
 type RoomInfo struct {
 	RoomId       string `json:"room_id"`
-	RoomIdTTLDay int    `json:"room_id_ttl_day"`
 	CustomerId   string `json:"customer_id"`
 	ChannelKey   string `json:"channel_key"`
 	BroadcastKey string `json:"broadcast_key"`
@@ -47,7 +39,6 @@ type RoomInfo struct {
 func NewRoomInfo(req RoomRequest, prefix string) *RoomInfo {
 	return &RoomInfo{
 		RoomId:       fmt.Sprintf("%s-%s", getChatPrefix(prefix), utils.GenUUID()),
-		RoomIdTTLDay: LiveChatRoomKeyTTL,
 		CustomerId:   req.CustomerId,
 		ChannelKey:   req.ChannelKey,
 		BroadcastKey: req.BroadCastKey,
@@ -61,7 +52,6 @@ func UpdateRoomInfo(req RoomRequest, roomId string) *RoomInfo {
 		CustomerId:   req.CustomerId,
 		ChannelKey:   req.ChannelKey,
 		BroadcastKey: req.BroadCastKey,
-		RoomIdTTLDay: LiveChatRoomKeyTTL,
 		CreatedAt:    time.Now().Unix(),
 	}
 }
@@ -74,14 +64,6 @@ func (r *RoomInfo) ConvertRedisData() map[string]interface{} {
 		"broadcast_key": r.BroadcastKey,
 		"created_at":    r.CreatedAt,
 	}
-}
-
-func (r *RoomInfo) GenerateRoomKey() string {
-	return fmt.Sprintf("%s_%s", LiveChatServerRoom, r.RoomId)
-}
-
-func (r *RoomInfo) GenerateRoomMapFieldKey() string {
-	return fmt.Sprintf("%s_%s_%s", LiveChatServerRoomList, r.ChannelKey, r.BroadcastKey)
 }
 
 func getChatPrefix(prefix string) string {
@@ -102,10 +84,10 @@ type RoomUseCase interface {
 
 type RoomRepository interface {
 	Create(ctx context.Context, data RoomInfo) error
-	Fetch(ctx context.Context, key string) (RoomInfo, error)
-	Exists(ctx context.Context, key string) (bool, error)
-	Update(ctx context.Context, key string, data RoomInfo) error
-	Delete(ctx context.Context, key string) error
-	SetRoomMap(ctx context.Context, key string, data RoomInfo) error
-	GetRoomMap(ctx context.Context, key, mapKey string) (RoomInfo, error)
+	Fetch(ctx context.Context, roomId string) (RoomInfo, error)
+	Exists(ctx context.Context, roomId string) (bool, error)
+	Update(ctx context.Context, roomId string, data RoomInfo) error
+	Delete(ctx context.Context, roomId string) error
+	SetRoomMap(ctx context.Context, data RoomInfo) error
+	GetRoomMap(ctx context.Context, channelKey, broadcastKey string) (RoomInfo, error)
 }

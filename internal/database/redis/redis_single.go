@@ -34,6 +34,14 @@ func NewRedisSingleClient(ctx context.Context, cfg config.Redis) (Client, error)
 	}, nil
 }
 
+func (r *redisClient) Set(ctx context.Context, key string, data interface{}, expiration time.Duration) error {
+	return r.client.Set(ctx, key, data, expiration).Err()
+}
+
+func (r *redisClient) Get(ctx context.Context, key string) (string, error) {
+	return r.client.Get(ctx, key).Result()
+}
+
 func (r *redisClient) HGet(ctx context.Context, key, mapKey string) (string, error) {
 
 	result, err := r.client.HGet(ctx, key, mapKey).Result()
@@ -58,9 +66,9 @@ func (r *redisClient) HGetAll(ctx context.Context, key string) (map[string]strin
 	return result, nil
 }
 
-func (r *redisClient) HSet(ctx context.Context, key string, data map[string]interface{}) error {
+func (r *redisClient) HSet(ctx context.Context, key, fieldKey string, data map[string]interface{}) error {
 
-	if err := r.client.HSet(ctx, key, data).Err(); err != nil {
+	if err := r.client.HSet(ctx, key, fieldKey, data).Err(); err != nil {
 		return fmt.Errorf("create chat room hm set err : %w", err)
 	}
 

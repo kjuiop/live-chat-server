@@ -79,7 +79,7 @@ func (a *App) setupRouter() {
 
 	// repository
 	roomRepository := rr.NewRoomRedisRepository(a.db)
-	systemRepository := sr.NewSystemRedisRepository(a.cfg.Redis)
+	systemRepository := sr.NewSystemRedisRepository(a.db)
 	// use_case
 	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)
 	chatUseCase := cu.NewChatUseCase(roomUseCase, timeout)
