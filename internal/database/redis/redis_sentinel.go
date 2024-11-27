@@ -13,7 +13,36 @@ type sentinelClient struct {
 	client *redis.Client
 }
 
-func (s sentinelClient) HSet(ctx context.Context, key string, data map[string]interface{}) error {
+func NewRedisSentinelClient(ctx context.Context, cfg config.Redis) (Client, error) {
+
+	client := redis.NewClient(&redis.Options{
+		Addr:         cfg.Addr,
+		DialTimeout:  time.Second * 3,
+		ReadTimeout:  time.Second * 3,
+		WriteTimeout: time.Second * 3,
+	})
+
+	if err := client.Ping(ctx).Err(); err != nil {
+		return nil, fmt.Errorf("fail ping err : %w", err)
+	}
+
+	return &sentinelClient{
+		cfg:    cfg,
+		client: client,
+	}, nil
+}
+
+func (s sentinelClient) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s sentinelClient) Get(ctx context.Context, key string) (string, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s sentinelClient) HSet(ctx context.Context, key, fieldKey string, data map[string]interface{}) error {
 	//TODO implement me
 	panic("implement me")
 }
@@ -41,23 +70,4 @@ func (s sentinelClient) Exists(ctx context.Context, key string) (bool, error) {
 func (s sentinelClient) DelByKey(ctx context.Context, key string) error {
 	//TODO implement me
 	panic("implement me")
-}
-
-func NewRedisSentinelClient(ctx context.Context, cfg config.Redis) (Client, error) {
-
-	client := redis.NewClient(&redis.Options{
-		Addr:         cfg.Addr,
-		DialTimeout:  time.Second * 3,
-		ReadTimeout:  time.Second * 3,
-		WriteTimeout: time.Second * 3,
-	})
-
-	if err := client.Ping(ctx).Err(); err != nil {
-		return nil, fmt.Errorf("fail ping err : %w", err)
-	}
-
-	return &sentinelClient{
-		cfg:    cfg,
-		client: client,
-	}, nil
 }

@@ -32,7 +32,11 @@ type Slack struct {
 }
 
 type Redis struct {
-	Addr string `envconfig:"LCS_REDIS_ADDR" default:":6379"`
+	Mode     string `envconfig:"LCS_REDIS_MODE" default:"single"`
+	Addr     string `envconfig:"LCS_REDIS_ADDR" default:":6379"`
+	Password string `envconfig:"KUS_REDIS_PASSWORD"`
+	Masters  string `envconfig:"KUS_REDIS_MASTERS"`
+	PoolSize int    `envconfig:"KUS_REDIS_POOL_SIZE" default:"100"`
 }
 
 type Mysql struct {
