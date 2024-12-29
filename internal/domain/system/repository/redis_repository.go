@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"live-chat-server/internal/database/redis"
+	"live-chat-server/internal/domain"
 	"live-chat-server/internal/domain/system"
 )
 
@@ -34,7 +34,7 @@ func (s *systemRedisRepository) SetChatServerInfo(ip string, available bool) err
 func (s *systemRedisRepository) GetAvailableServerList() ([]system.ServerInfo, error) {
 	result, err := s.db.HGetAll(context.TODO(), LiveChatServerInfo)
 	if err != nil {
-		return nil, fmt.Errorf("fail get room info, err : %w", err)
+		return nil, domain.GetCustomErr(domain.ErrNotFoundServerInfo)
 	}
 
 	// redis 는 하나의 json 문자열로 반환하기 때문에 안의 데이터타입을 변경하기 위해서는 아래와 같은 매핑 작업을 필요로 함
