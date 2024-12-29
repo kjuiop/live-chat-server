@@ -41,7 +41,7 @@ func (r roomMysqlRepository) Delete(ctx context.Context, key string) error {
 	panic("implement me")
 }
 
-func (r roomMysqlRepository) SetRoomMap(ctx context.Context, key string, data room.RoomInfo) error {
+func (r roomMysqlRepository) SetRoomMap(ctx context.Context, data room.RoomInfo) error {
 	//TODO implement me
 	panic("implement me")
 }

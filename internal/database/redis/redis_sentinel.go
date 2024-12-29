@@ -13,7 +13,17 @@ type sentinelClient struct {
 	client *redis.Client
 }
 
-func (s sentinelClient) HSet(ctx context.Context, key string, data map[string]interface{}) error {
+func (s sentinelClient) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s sentinelClient) Get(ctx context.Context, key string) (string, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s sentinelClient) HSet(ctx context.Context, key, fieldKey string, data map[string]interface{}) error {
 	//TODO implement me
 	panic("implement me")
 }
