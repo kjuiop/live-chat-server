@@ -9,11 +9,7 @@ import (
 	cu "live-chat-server/internal/domain/chat/usecase"
 	rr "live-chat-server/internal/domain/room/repository"
 	ru "live-chat-server/internal/domain/room/usecase"
-	spq "live-chat-server/internal/domain/system/pubsub"
-	sr "live-chat-server/internal/domain/system/repository"
-	su "live-chat-server/internal/domain/system/usecase"
 	"live-chat-server/internal/logger"
-	"live-chat-server/internal/mq/kafka"
 	"live-chat-server/internal/reporter"
 	"live-chat-server/internal/server"
 	"log"
@@ -25,7 +21,6 @@ type App struct {
 	cfg config.EnvConfig
 	srv server.Client
 	db  redis.Client
-	mq  kafka.Client
 }
 
 func NewApplication(ctx context.Context) *App {
@@ -46,15 +41,12 @@ func NewApplication(ctx context.Context) *App {
 		log.Fatalf("fail to connect redis client")
 	}
 
-	mq := kafka.NewMemoryClient()
-
 	srv := server.NewGinServer(cfg)
 
 	app := &App{
 		cfg: *cfg,
 		srv: srv,
 		db:  db,
-		mq:  mq,
 	}
 
 	app.setupRouter()
@@ -74,27 +66,21 @@ func (a *App) setupRouter() {
 
 	timeout := time.Duration(a.cfg.Policy.ContextTimeout) * time.Second
 
-	// mq
-	systemPubSub := spq.NewMemorySystemPubSub(a.cfg.Kafka, nil)
-
 	// repository
 	roomRepository := rr.NewRoomRedisRepository(a.db)
-	systemRepository := sr.NewSystemRedisRepository(a.db)
+
 	// use_case
 	roomUseCase := ru.NewRoomUseCase(roomRepository, timeout)
 	chatUseCase := cu.NewChatUseCase(roomUseCase, timeout)
-	systemUseCase := su.NewSystemUseCase(context.TODO(), systemRepository, systemPubSub)
 
 	// controller
-	systemController := controller.NewSystemController(systemUseCase)
 	roomController := controller.NewRoomController(a.cfg.Policy, roomUseCase)
 	chatController := controller.NewChatController(chatUseCase)
 
 	router := route.RouterConfig{
-		Engine:           a.srv.GetEngine(),
-		SystemController: systemController,
-		RoomController:   roomController,
-		ChatController:   chatController,
+		Engine:         a.srv.GetEngine(),
+		RoomController: roomController,
+		ChatController: chatController,
 	}
 	router.Setup()
 }

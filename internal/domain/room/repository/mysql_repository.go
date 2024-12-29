@@ -21,22 +21,22 @@ func (r roomMysqlRepository) Create(ctx context.Context, data room.RoomInfo) err
 	panic("implement me")
 }
 
-func (r roomMysqlRepository) Fetch(ctx context.Context, key string) (room.RoomInfo, error) {
+func (r roomMysqlRepository) Fetch(ctx context.Context, roomId string) (room.RoomInfo, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r roomMysqlRepository) Exists(ctx context.Context, key string) (bool, error) {
+func (r roomMysqlRepository) Exists(ctx context.Context, roomId string) (bool, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r roomMysqlRepository) Update(ctx context.Context, key string, data room.RoomInfo) error {
+func (r roomMysqlRepository) Update(ctx context.Context, roomId string, data room.RoomInfo) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r roomMysqlRepository) Delete(ctx context.Context, key string) error {
+func (r roomMysqlRepository) Delete(ctx context.Context, roomId string) error {
 	//TODO implement me
 	panic("implement me")
 }
@@ -46,7 +46,7 @@ func (r roomMysqlRepository) SetRoomMap(ctx context.Context, data room.RoomInfo)
 	panic("implement me")
 }
 
-func (r roomMysqlRepository) GetRoomMap(ctx context.Context, key, mapKey string) (room.RoomInfo, error) {
+func (r roomMysqlRepository) GetRoomMap(ctx context.Context, channelKey, broadcastKey string) (room.RoomInfo, error) {
 	//TODO implement me
 	panic("implement me")
 }
