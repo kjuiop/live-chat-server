@@ -47,7 +47,7 @@ func (r *Room) chatInit() {
 			switch msg.Method {
 			case "chat":
 				r.broadcastChat(msg)
-				slog.Info("leave", "send_user_id", msg.SendUserId, "chat_message", msg.Message)
+				slog.Info("chat", "send_user_id", msg.SendUserId, "chat_message", msg.Message)
 			default:
 			}
 		}

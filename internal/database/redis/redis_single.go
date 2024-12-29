@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"live-chat-server/config"
@@ -35,7 +36,11 @@ func NewRedisSingleClient(ctx context.Context, cfg config.Redis) (Client, error)
 }
 
 func (r *redisClient) Set(ctx context.Context, key string, data interface{}, expiration time.Duration) error {
-	return r.client.Set(ctx, key, data, expiration).Err()
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return r.client.Set(ctx, key, jsonData, expiration).Err()
 }
 
 func (r *redisClient) Get(ctx context.Context, key string) (string, error) {

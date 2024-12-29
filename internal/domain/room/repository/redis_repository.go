@@ -58,13 +58,8 @@ func (r *roomRedisRepository) Fetch(ctx context.Context, roomId string) (room.Ro
 	//	}
 	//}
 
-	jsonData, err := json.Marshal(result)
-	if err != nil {
-		return room.RoomInfo{}, fmt.Errorf("json marshal err : %w", err)
-	}
-
 	var roomInfo room.RoomInfo
-	if err := json.Unmarshal(jsonData, &roomInfo); err != nil {
+	if err := json.Unmarshal([]byte(result), &roomInfo); err != nil {
 		return room.RoomInfo{}, fmt.Errorf("json parsing err : %w", err)
 	}
 
