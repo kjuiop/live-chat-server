@@ -33,7 +33,7 @@ func TestGetHealthSuccess(t *testing.T) {
 
 			c.Request = httptest.NewRequest(http.MethodGet, "/health-check", nil)
 
-			systemController.GetHealth(c)
+			testClient.systemController.GetHealth(c)
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
 			var responseBody domain.ApiResponse

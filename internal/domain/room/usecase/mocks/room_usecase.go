@@ -8,15 +8,6 @@ import (
 	"sync"
 )
 
-type RoomInfo struct {
-	ID   string
-	Name string
-}
-
-type RoomIdRequest struct {
-	Name string
-}
-
 type RoomUseCaseStub struct {
 	mu    sync.Mutex
 	Rooms map[string]room.RoomInfo

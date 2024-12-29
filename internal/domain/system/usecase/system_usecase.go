@@ -3,7 +3,9 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"live-chat-server/internal/domain"
 	"live-chat-server/internal/domain/system"
 	"live-chat-server/internal/mq/types"
 	"log"
@@ -59,7 +61,9 @@ func (s *systemUseCase) GetServerList() ([]system.ServerInfo, error) {
 func (s *systemUseCase) setServerInfo() error {
 
 	serverList, err := s.GetAvailableServerList()
-	if err != nil {
+	if errors.Is(err, domain.GetCustomErr(domain.ErrNotFoundServerInfo)) {
+		return nil
+	} else if err != nil {
 		return err
 	}
 

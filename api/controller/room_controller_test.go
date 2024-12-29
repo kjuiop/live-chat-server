@@ -55,7 +55,7 @@ func TestRoomController_CreateChatRoom_Success(t *testing.T) {
 			}
 			c.Request = httptest.NewRequest(http.MethodPost, "/api/rooms", bytes.NewBuffer(jsonRequest))
 
-			roomController.CreateChatRoom(c)
+			testClient.roomController.CreateChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
@@ -126,7 +126,7 @@ func TestRoomController_CreateChatRoom_Fail(t *testing.T) {
 			}
 			c.Request = httptest.NewRequest(http.MethodPost, "/api/rooms", bytes.NewBuffer(jsonRequest))
 
-			roomController.CreateChatRoom(c)
+			testClient.roomController.CreateChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
@@ -176,7 +176,7 @@ func TestRoomController_GetChatRoom_Success(t *testing.T) {
 			c.Params = gin.Params{
 				{Key: "room_id", Value: tc.roomId},
 			}
-			roomController.GetChatRoom(c)
+			testClient.roomController.GetChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
@@ -242,7 +242,7 @@ func TestRoomController_GetChatRoom_Fail(t *testing.T) {
 			c.Params = gin.Params{
 				{Key: "room_id", Value: tc.roomId},
 			}
-			roomController.GetChatRoom(c)
+			testClient.roomController.GetChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
@@ -303,7 +303,7 @@ func TestRoomController_UpdateChatRoom_Success(t *testing.T) {
 				{Key: "room_id", Value: tc.roomId},
 			}
 
-			roomController.UpdateChatRoom(c)
+			testClient.roomController.UpdateChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
@@ -398,7 +398,7 @@ func TestRoomController_UpdateChatRoom_Fail(t *testing.T) {
 				{Key: "room_id", Value: tc.roomId},
 			}
 
-			roomController.UpdateChatRoom(c)
+			testClient.roomController.UpdateChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
@@ -450,7 +450,7 @@ func TestRoomController_DeleteChatRoom_Success(t *testing.T) {
 				{Key: "room_id", Value: tc.roomId},
 			}
 
-			roomController.DeleteChatRoom(c)
+			testClient.roomController.DeleteChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
@@ -501,7 +501,7 @@ func TestRoomController_DeleteChatRoom_Fail(t *testing.T) {
 				{Key: "room_id", Value: tc.roomId},
 			}
 
-			roomController.DeleteChatRoom(c)
+			testClient.roomController.DeleteChatRoom(c)
 
 			testAssert.Equal(tc.expectedCode, resp.Code)
 
@@ -555,7 +555,7 @@ func TestRoomController_GetChatRoomId_Success(t *testing.T) {
 			c.Request = httptest.NewRequest(http.MethodGet, "/api/rooms/id?"+queryParams.Encode(), nil)
 
 			// 컨트롤러 호출
-			roomController.GetChatRoomId(c)
+			testClient.roomController.GetChatRoomId(c)
 
 			// 상태 코드 검증
 			testAssert.Equal(tc.expectedCode, resp.Code)
@@ -634,7 +634,7 @@ func TestRoomController_GetChatRoomId_Fail(t *testing.T) {
 			c.Request = httptest.NewRequest(http.MethodGet, requestURL, nil)
 
 			// 컨트롤러 호출
-			roomController.GetChatRoomId(c)
+			testClient.roomController.GetChatRoomId(c)
 
 			// 상태 코드 검증
 			testAssert.Equal(tc.expectedCode, resp.Code)

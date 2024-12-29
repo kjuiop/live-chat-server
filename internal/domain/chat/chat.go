@@ -2,9 +2,10 @@ package chat
 
 import (
 	"context"
-	"net/http"
+	"github.com/gorilla/websocket"
 )
 
 type ChatUseCase interface {
-	ServeWs(ctx context.Context, writer http.ResponseWriter, request *http.Request, roomId, userId string) error
+	GetChatRoom(ctx context.Context, roomId string) (*Room, error)
+	ServeWs(ctx context.Context, socket *websocket.Conn, chatRoom *Room, userId string) error
 }

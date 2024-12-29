@@ -10,3 +10,6 @@ bin
 .env
 mk_controller
 mk_worker
+
+install/minio/config
+install/minio/data

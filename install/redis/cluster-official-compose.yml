@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  redis-node-1:
+    image: redis:7.0.15
+    container_name: redis-node-1
+    command: redis-server --port 6379 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "6371:6379"
+    volumes:
+      - redis-node-1-data:/data
+    networks:
+      redis-cluster:
+        ipv4_address: 172.30.0.2
+
+  redis-node-2:
+    image: redis:7.0.15
+    container_name: redis-node-2
+    command: redis-server --port 6379 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "6372:6379"
+    volumes:
+      - redis-node-2-data:/data
+    networks:
+      redis-cluster:
+        ipv4_address: 172.30.0.3
+
+  redis-node-3:
+    image: redis:7.0.15
+    container_name: redis-node-3
+    command: redis-server --port 6379 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "6373:6379"
+    volumes:
+      - redis-node-3-data:/data
+    networks:
+      redis-cluster:
+        ipv4_address: 172.30.0.4
+
+  redis-node-4:
+    image: redis:7.0.15
+    container_name: redis-node-4
+    command: redis-server --port 6379 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "6374:6379"
+    volumes:
+      - redis-node-4-data:/data
+    networks:
+      redis-cluster:
+        ipv4_address: 172.30.0.5
+
+  redis-node-5:
+    image: redis:7.0.15
+    container_name: redis-node-5
+    command: redis-server --port 6379 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "6375:6379"
+    volumes:
+      - redis-node-5-data:/data
+    networks:
+      redis-cluster:
+        ipv4_address: 172.30.0.6
+
+  redis-node-6:
+    image: redis:7.0.15
+    container_name: redis-node-6
+    command: redis-server --port 6379 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "6376:6379"
+    volumes:
+      - redis-node-6-data:/data
+    networks:
+      redis-cluster:
+        ipv4_address: 172.30.0.7
+
+volumes:
+  redis-node-1-data:
+  redis-node-2-data:
+  redis-node-3-data:
+  redis-node-4-data:
+  redis-node-5-data:
+  redis-node-6-data:
+
+networks:
+  redis-cluster:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+
+# docker exec -it redis-node-1 redis-cli --cluster create \
+#  172.30.0.2:6379 \
+#  172.30.0.3:6379 \
+#  172.30.0.4:6379 \
+#  172.30.0.5:6379 \
+#  172.30.0.6:6379 \
+#  172.30.0.7:6379 \
+#  --cluster-replicas 1
+
+# docker exec -it redis-node-1 redis-cli -c cluster nodes

@@ -5,7 +5,6 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"live-chat-server/config"
 	"live-chat-server/internal/mq/types"
-	"log/slog"
 )
 
 type kafkaClient struct {
@@ -90,15 +89,4 @@ func (k *kafkaClient) PublishEvent(topic string, data []byte) (types.Event, erro
 	default:
 		return nil, errors.New("unexpected event type")
 	}
-}
-
-func (k *kafkaClient) Close(mqType string) {
-	if mqType == "consumer" {
-		if err := k.consumer.Close(); err != nil {
-			slog.Error("failed closed kafka, err : %s", err.Error())
-		}
-	} else {
-		k.producer.Close()
-	}
-
 }

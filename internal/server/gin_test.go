@@ -19,8 +19,9 @@ func TestRunAndShutdown(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	cfg, _ := config.LoadEnvConfig()
 	cfg.Server = config.Server{
-		Mode: "test",
-		Port: "8090",
+		Mode:           "test",
+		Port:           "8090",
+		TrustedProxies: "127.0.0.1/32",
 	}
 
 	s := NewGinServer(cfg)
@@ -36,7 +37,7 @@ func TestRunAndShutdown(t *testing.T) {
 
 	time.Sleep(10 * time.Millisecond)
 
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/health-check", cfg.Server.Port))
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/system/health-check", cfg.Server.Port))
 	if err != nil {
 		t.Fatalf("Failed to make GET request: %v", err)
 	}

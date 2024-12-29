@@ -3,20 +3,28 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"live-chat-server/internal/domain"
 	"live-chat-server/internal/domain/chat"
+	"live-chat-server/internal/domain/chat/types"
 	"net/http"
 )
 
 type ChatController struct {
+	upgrader    *websocket.Upgrader
 	ChatUseCase chat.ChatUseCase
-	hub         map[string]*chat.Room
 }
 
 func NewChatController(chatUseCase chat.ChatUseCase) *ChatController {
 	return &ChatController{
+		upgrader: &websocket.Upgrader{
+			ReadBufferSize:  types.SocketBufferSize,
+			WriteBufferSize: types.MessageBufferSize,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
 		ChatUseCase: chatUseCase,
-		hub:         make(map[string]*chat.Room),
 	}
 }
 
@@ -47,8 +55,20 @@ func (cc *ChatController) ServeWs(c *gin.Context) {
 	roomId := c.Param("room_id")
 	userId := c.Param("user_id")
 
-	if err := cc.ChatUseCase.ServeWs(c, c.Writer, c.Request, roomId, userId); err != nil {
+	socket, err := cc.upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		cc.failResponse(c, http.StatusInternalServerError, domain.ErrNotFoundChatRoom, fmt.Errorf("not found chat room, roomId : %s, err : %w", roomId, err))
+		return
+	}
+
+	chatRoom, err := cc.ChatUseCase.GetChatRoom(c, roomId)
+	if err != nil {
 		cc.failResponse(c, http.StatusBadRequest, domain.ErrNotFoundChatRoom, fmt.Errorf("not found chat room, roomId : %s, err : %w", roomId, err))
+		return
+	}
+
+	if err := cc.ChatUseCase.ServeWs(c, socket, chatRoom, userId); err != nil {
+		cc.failResponse(c, http.StatusInternalServerError, domain.ErrInternalServerError, fmt.Errorf("failed serve websocket, roomId : %s, err : %w", roomId, err))
 		return
 	}
 

@@ -55,4 +55,5 @@ build_num:
 	@echo "BUILD_NUM      : $(BUILD_NUM)"
 
 test:
+	@go clean -testcache
 	@go test ./...

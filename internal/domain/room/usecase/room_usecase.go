@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"live-chat-server/internal/domain/room"
 	"time"
 )
@@ -30,7 +29,7 @@ func (r *roomUseCase) GetChatRoomById(c context.Context, roomId string) (room.Ro
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	roomInfo, err := r.roomRepository.Fetch(ctx, getConvertRedisKey(roomId))
+	roomInfo, err := r.roomRepository.Fetch(ctx, roomId)
 	if err != nil {
 		return room.RoomInfo{}, err
 	}
@@ -42,7 +41,7 @@ func (r *roomUseCase) CheckExistRoomId(c context.Context, roomId string) (bool, 
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	isExist, err := r.roomRepository.Exists(ctx, getConvertRedisKey(roomId))
+	isExist, err := r.roomRepository.Exists(ctx, roomId)
 	if err != nil {
 		return false, err
 	}
@@ -54,11 +53,11 @@ func (r *roomUseCase) UpdateChatRoom(c context.Context, roomId string, roomInfo 
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	if err := r.roomRepository.Update(ctx, getConvertRedisKey(roomId), roomInfo); err != nil {
+	if err := r.roomRepository.Update(ctx, roomId, roomInfo); err != nil {
 		return room.RoomInfo{}, err
 	}
 
-	savedInfo, err := r.roomRepository.Fetch(c, getConvertRedisKey(roomId))
+	savedInfo, err := r.roomRepository.Fetch(c, roomId)
 	if err != nil {
 		return room.RoomInfo{}, err
 	}
@@ -70,7 +69,7 @@ func (r *roomUseCase) DeleteChatRoom(c context.Context, roomId string) error {
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	if err := r.roomRepository.Delete(ctx, getConvertRedisKey(roomId)); err != nil {
+	if err := r.roomRepository.Delete(ctx, roomId); err != nil {
 		return err
 	}
 
@@ -81,8 +80,8 @@ func (r *roomUseCase) RegisterRoomId(c context.Context, roomInfo room.RoomInfo) 
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	if err := r.roomRepository.SetRoomMap(ctx, room.LiveChatServerRoomList, roomInfo); err != nil {
-		return fmt.Errorf("failed create room map, key:%s, err : %w", room.LiveChatServerRoomList, err)
+	if err := r.roomRepository.SetRoomMap(ctx, roomInfo); err != nil {
+		return err
 	}
 
 	return nil
@@ -92,16 +91,10 @@ func (r *roomUseCase) GetChatRoomId(c context.Context, req room.RoomIdRequest) (
 	ctx, cancel := context.WithTimeout(c, r.contextTimeout)
 	defer cancel()
 
-	roomMapKey := fmt.Sprintf("%s_%s_%s", room.LiveChatServerRoomList, req.ChannelKey, req.BroadCastKey)
-
-	roomInfo, err := r.roomRepository.GetRoomMap(ctx, room.LiveChatServerRoomList, roomMapKey)
+	roomInfo, err := r.roomRepository.GetRoomMap(ctx, req.ChannelKey, req.BroadCastKey)
 	if err != nil {
 		return room.RoomInfo{}, err
 	}
 
 	return roomInfo, nil
-}
-
-func getConvertRedisKey(roomId string) string {
-	return fmt.Sprintf("%s_%s", room.LiveChatServerRoom, roomId)
 }

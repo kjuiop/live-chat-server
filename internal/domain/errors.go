@@ -1,6 +1,28 @@
 package domain
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+type CustomErr struct {
+	Code int
+	Err  error
+}
+
+func (ce *CustomErr) Error() string {
+	if ce.Err != nil {
+		return ce.Err.Error()
+	}
+	return fmt.Sprintf("error code %d: Unknown error", ce.Code)
+}
+
+var errorList = map[int]CustomErr{
+	ErrNotFoundServerInfo: {
+		Code: ErrNotFoundServerInfo,
+		Err:  errors.New("not found server info"),
+	},
+}
 
 const (
 	InternalRedisError = "internal redis error occur"
@@ -12,6 +34,7 @@ const (
 	ErrNotFoundChatRoom        = 4002
 	ErrNotConnectSocket        = 4003
 	ErrEmptyParam              = 4004
+	ErrNotFoundServerInfo      = 4005
 	ErrRedisHMSETError         = 5001
 	ErrRedisExistError         = 5002
 	ErrRedisHMDELError         = 5003
@@ -37,6 +60,14 @@ func GetCustomErrMessage(code int, error string) string {
 	}
 
 	return fmt.Sprintf("%s, err : %s", message, error)
+}
+
+func GetCustomErr(code int) error {
+	customErr, exists := errorList[code]
+	if !exists || customErr.Err == nil {
+		return errors.New("unknown error")
+	}
+	return customErr.Err
 }
 
 func GetCustomMessage(code int) string {
