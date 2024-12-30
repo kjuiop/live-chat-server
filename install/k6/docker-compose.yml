@@ -22,7 +22,7 @@ services:
     image: grafana/k6
     volumes:
       - ./k6-scripts:/scripts
-    command: run -o experimental-prometheus-rw /scripts/health-check.js
+    command: run -o experimental-prometheus-rw /scripts/websocket.js
     environment:
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
