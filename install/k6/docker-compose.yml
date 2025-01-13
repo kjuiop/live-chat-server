@@ -26,11 +26,24 @@ services:
       - 5665:5665
     volumes:
       - ./k6-scripts:/scripts
-    command: run -o experimental-prometheus-rw /scripts/5000-join-chat-websocket.js
+    command: run -o experimental-prometheus-rw /scripts/load-join-test-websocket.js
     environment:
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
       - K6_WEB_DASHBOARD=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - prometheus
+
+  k6-2:
+    image: grafana/k6
+    volumes:
+      - ./k6-scripts:/scripts
+    command: run -o experimental-prometheus-rw /scripts/10-chat-websocket.js
+    environment:
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+      - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
