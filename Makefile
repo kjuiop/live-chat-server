@@ -18,7 +18,7 @@ LDFLAGS+=-X main.APP_VERSION=$(TARGET_VERSION)
 LDFLAGS+=-X main.GIT_HASH=`git rev-parse HEAD`
 LDFLAGS+=-s -w
 
-redis-single: config test redis_single-build
+redis-single: config redis_single-build
 mk_controller: config test mk_controller-build
 mk_worker: config test mk_worker-build
 

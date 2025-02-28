@@ -29,6 +29,7 @@ func NewChatUseCase(roomUseCase room.RoomUseCase, timeout time.Duration) chat.Ch
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  types.SocketBufferSize,
 			WriteBufferSize: types.MessageBufferSize,
+
 			CheckOrigin: func(r *http.Request) bool {
 				return true
 			},
