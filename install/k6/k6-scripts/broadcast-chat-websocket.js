@@ -3,12 +3,12 @@ import { check } from 'k6';
 import { Trend, Counter } from 'k6/metrics';
 
 // 커스텀 메트릭 정의
-const wsConnecting = new Trend('ws_connecting'); // 연결 시간
-const wsMsgsReceived = new Counter('ws_msgs_received'); // 수신된 메시지 수
-const wsMsgsSent = new Counter('ws_msgs_sent'); // 전송된 메시지 수
-const wsPing = new Trend('ws_ping'); // Ping-Pong 시간
-const wsSessionDuration = new Trend('ws_session_duration'); // 세션 지속 시간
-const wsSessions = new Counter('ws_sessions'); // 시작된 세션 수
+const wsConnecting = new Trend('test_ws_connecting'); // 연결 시간
+const wsMsgsReceived = new Counter('test_ws_msgs_received'); // 수신된 메시지 수
+const wsMsgsSent = new Counter('test_ws_msgs_sent'); // 전송된 메시지 수
+const wsPing = new Trend('test_ws_ping'); // Ping-Pong 시간
+const wsSessionDuration = new Trend('test_ws_session_duration'); // 세션 지속 시간
+const wsSessions = new Counter('test_ws_sessions'); // 시작된 세션 수
 
 export const options = {
     vus: 10,
@@ -16,7 +16,7 @@ export const options = {
 };
 
 export default function () {
-    const url = 'ws://example.com/socket';
+    const url = 'ws://host.docker.internal:8090/ws/chat/join/rooms/N1-01JGRGTBYTM5K3ZWCGF4PMNKEB/user/jake';
 
     const response = ws.connect(url, {}, (socket) => {
         const connectStart = Date.now();
@@ -35,9 +35,13 @@ export default function () {
             const pingStart = Date.now();
             socket.on('message', (data) => {
                 wsMsgsReceived.add(1); // 메시지 수신 카운트
-                const parsedData = JSON.parse(data);
-                if (parsedData.type === 'pong') {
-                    wsPing.add(Date.now() - pingStart);
+                try {
+                    const parsedData = JSON.parse(data);
+                    if (parsedData.type === 'pong') {
+                        wsPing.add(Date.now() - pingStart);
+                    }
+                } catch (e) {
+                    console.error(`Failed to parse message: ${data}`);
                 }
             });
         });
