@@ -18,7 +18,8 @@ LDFLAGS+=-X main.APP_VERSION=$(TARGET_VERSION)
 LDFLAGS+=-X main.GIT_HASH=`git rev-parse HEAD`
 LDFLAGS+=-s -w
 
-redis-single: config redis_single-build
+all: config redis_single-build
+
 mk_controller: config test mk_controller-build
 mk_worker: config test mk_worker-build
 
@@ -26,7 +27,7 @@ config:
 	@if [ ! -d $(TARGET_DIR) ]; then mkdir $(TARGET_DIR); fi
 
 redis_single-build:
-	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(REDIS_SINGLE_MAIN)
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $(OUTPUT) $(PROJECT_PATH)$(REDIS_SINGLE_MAIN)
 	cp $(OUTPUT) ./$(MODULE_NAME)
 
 mk_controller-build:
