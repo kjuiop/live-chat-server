@@ -7,29 +7,6 @@ import (
 	"time"
 )
 
-func TestChannel(t *testing.T) {
-
-	ch := make(chan int)
-
-	// 채널에 값을 보내는 고루틴 실행
-	go func() {
-		ch <- 123
-	}()
-
-	go func() {
-		ch <- 456
-	}()
-
-	for {
-		i := <-ch
-		if i != 123 && i != 456 {
-			t.Errorf("Expected %d, but got %d", i, i)
-		}
-
-		fmt.Printf("i : %d\n", i)
-	}
-}
-
 func TestUnbufferedChannel(t *testing.T) {
 	fmt.Println("Testing with unbuffered channel:")
 

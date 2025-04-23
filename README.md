@@ -2,39 +2,49 @@
 
 ---
 
-live-chat-server 는 채팅 메시지를 주고 받을 수 있는 서버입니다.
+**Live Chat Server**는 실시간 채팅 메시지를 주고받을 수 있는 단독 서버 애플리케이션입니다.  
+HTTP API를 통해 채팅방을 생성하고, WebSocket을 통해 실시간 메시지를 주고받을 수 있습니다.
 
-live-chat-server 는 단독 서버 형태로 운영되며, 데이터 흐름은 아래와 같습니다.
+## 🧩 시스템 구성
 
 ![image](https://github.com/user-attachments/assets/b64af16b-e320-49c9-8187-6cadc1b12c3c)
 
-- 사용자는 http api 를 통해 chat-room CRUD 기능을 수행합니다.
-- 채팅방 생성 이후 사용자가 해당 채팅방에 입장하면 채팅을 진행할 수 있습니다.
-    - join, leave, chat
 
-## Tech Stack
+- 사용자는 HTTP API를 통해 채팅방을 생성하거나 삭제할 수 있습니다.
+- 채팅방에 입장한 사용자는 WebSocket을 통해 실시간으로 메시지를 주고받을 수 있습니다.
+- 서버는 Redis를 사용하여 메시지 브로커 역할을 수행하며, 채팅 메시지를 효율적으로 관리합니다.
 
-- Golang(1.22), Gin, Gorilla, Redis
+## ⚙️ 기술 스택
+
+- **언어**: Go 1.22
+- **웹 프레임워크**: Gin
+- **WebSocket**: Gorilla WebSocket
+- **데이터 저장소**: Redis
+- **빌드 도구**: Makefile
+
+## 🚀 시작하기
 
 
-## TEST
+### TEST
 
 ```shell
 make test
 ```
 
 
-## BUILD
+### BUILD
 
 ```shell
 make build
 ```
 
 
-## RUN
+### RUN
 ```shell
 ./live-chat-server
 ```
 
 <br />
 
+
+<br />
